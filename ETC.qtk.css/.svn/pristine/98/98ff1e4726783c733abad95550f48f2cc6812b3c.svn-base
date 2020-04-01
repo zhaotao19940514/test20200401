@@ -1,0 +1,158 @@
+/*每段css的下半段是赵忖的css
+mynav换行的情况
+*/
+@charset "utf-8";
+body {
+    background: #ecf5fd repeat scroll 0 0;
+    font-size: 14px;
+    color: #222222;
+	font-family: "Arial","微软雅黑","宋体";
+	line-height: 1.42857;
+	margin: 0px;
+	padding: 0px;
+	border: 0px;
+}
+
+#page-container{
+background: #ecf5fd url(../images/mainbg2.jpg) no-repeat center top;
+overflow: hidden;
+}
+#header{
+   /*background: url(../images/topbg.jpg) no-repeat left top; 
+   box-shadow: 3px 3px 3px #0e416f;*/
+}
+a.navbar-brand.mybrand,a.navbar-brand.mybrand:hover,a.navbar-brand.mybrand:focus,a.navbar-brand.mybrand:visited{
+	color: white;
+	font-size: 28px;
+	font-weight: 800;
+	width: 800px;   /*屏幕宽度小于767px时会把用户管理挤下去,改成了相对和绝对定位，解决了*/
+}
+
+.mytop{	 
+	height: 80px; line-height:80px;
+}
+.mybrand{position:relative; z-index:1;padding: 8px 20px;}
+
+
+
+.navbar {
+  position: relative;
+  min-height: 50px;
+  margin-bottom: 20px;
+  border: 1px solid transparent; 
+}
+@media (max-width: 767px)
+.navbar-header {border-bottom: 0px solid #eee;} /*为什么设成0不顶用？？？*/
+
+.navbar-toggle{ position: absolute; z-index:30; top:10px; right:10px; }
+
+ul.myinfo{ 
+	position:relative; right:20px;
+	-webkit-border-radius: 2px;
+	-moz-border-radius: 2px;
+	border-radius: 2px;/*4px圆角*/
+	background-color: #d3e7f9;
+	margin-top: 20px;
+}
+ul.myinfo>li>a{
+	padding: 10px 15px;
+}
+ul.myinfo>li>a:hover span{ color:#f80000;}
+
+.sidebar {
+    background: none repeat scroll 0 0 #ddd;
+}
+
+
+/*---------------横向导航----------------*/
+#navbarTarget.mynav{
+	margin: 0 -15px; margin:0 5px;
+	padding: 0px;
+}
+.mynav{ height:60px; line-height:60px; background:#1879ce;}
+.nav{ padding:0 0px;}
+.app_pic{width:30px;height: 30px}
+#mynav li{ float:left;height:60px;line-height:60px; border-right:1px solid #8cbce7;}
+#mynav li:first-child{border-left:1px solid #8cbce7;}
+#mynav li a,#mynav li a:visited,#mynav li a:focus{ 
+	display:block; height:60px;line-height:60px; padding:0 20px; font-size:16px; color:#fff;background: transparent;}
+#mynav li a:hover,#mynav li.active a{
+	display:block; height:60px;line-height:60px; padding:0 20px; font-size:16px; color:#fff; background:#039A01;}
+	
+	#mynav li{ position:relative; z-index:20;}	
+	#mynav li .sub{ position: absolute;top:60px; left:-40px;display: none;list-style-type: none; padding-right:0;}
+	#mynav>li:hover .sub{display:block;}
+		#mynav li .sub li{ border:0; clear:both; width:210px;height:40px; line-height:40px;}
+		#mynav li .sub li a{ display:block;width:210px; height:40px; line-height:40px; color:#fff; padding-left:20px;background:#2ec7c9; }
+				#mynav li .sub li a:focus{background:#00429d;}
+				#mynav li .sub li a:hover,#mynav li .sub li.li_now a{ background:#00acac;}
+				#mynav .menu_wz{ float:left;line-height:40px;}
+				#mynav .menu_jt{float:right;line-height:normal; margin-right:0px;padding: 14px 0px;}
+				
+				
+				#mynav>li>.sub>li>.sub{ position:absolute; z-index:333; top:0; left:170px;display: none;list-style-type: none; padding-right:0;}
+				#mynav>li>.sub>li:hover>.sub{display: block;}
+					#mynav li .sub li .sub li{ border:0; clear:both; width:210px;height:40px; line-height:40px;}
+					#mynav li .sub li .sub li a{ display:block;width:210px; height:40px; line-height:40px; color:#fff; padding-left:30px;background:#00acac;}
+							#mynav li .sub li .sub li a:hover{ background:#007a7a;/* border-left:5px solid #f87c4e; */}
+							#mynav li .sub li .sub li.li_now a{background:#f79d7b; border-left:5px solid #f87c4e;}
+							
+				
+/*---------------左侧导航----------------*/
+/*背景色放在a上面 */
+.left_menu{	float:left;width:230px;background-color: white; margin-left:20px;padding:20px 2px 5000px 20px;margin-bottom: -5000px;}
+.left_menu>.left_menu_bg{min-height:calc(100vh - 5000px);background-color:#005fb3;}
+.left_menu ul{margin: 0px;padding: 0px;list-style-type: none;}
+		.left_menu li .sub {display: none;}
+		.left_menu li.li_now>.sub {display: block;}
+		.left_menu li{line-height:49px; border-bottom:1px solid #fff; font-size:16px; background:#22a2d4;overflow:hidden;}
+		.left_menu li a{ display:block;height:50px; line-height:50px; color:#fff;text-decoration: none;}
+		.left_menu .menu_ico{ float:left; width:35px; height:50px; line-height:50px; text-align:left; padding-left:10px;}
+		.left_menu .menu_ico >i{line-height:50px;font-size:1.2em;}
+		.left_menu .menu_wz{ float:left;line-height:50px;}
+		.left_menu .menu_jt{float:right;line-height:50px; margin-right:10px;}
+			.left_menu li .sub li{line-height:40px;  font-size:16px; background:#22a2d4;overflow:hidden; border-top:1px dashed #96e2ff;border-bottom:0;}
+				.left_menu .sub  img{ float:right; margin-top:10px; margin-right:10px;}
+				.left_menu li .sub li a{ display:block;height:40px; line-height:40px; color:#fff; padding-left:45px;background:url(../images/dot4.png) no-repeat 25px center;}
+				.left_menu li .sub li li a{ display:block; height:40px; line-height:40px; color:#fff; padding-left:65px;background:url(../images/dot3.png) no-repeat 45px center;}
+				
+				.left_menu .li_now>a,.left_menu li .sub li.li_now>a,.left_menu li .sub li li.li_now>a,
+				.left_menu a:hover,.left_menu li .sub li a:hover,.left_menu li .sub li li a:hover
+				{ display:block;background-color:#2ec7c9;}
+				
+.app_pic,.menu_ico>i{
+	transition:width 1s,height 1s,transform 1s;
+}
+.left_menu>.left_menu_bg>ul>li >a:hover>.menu_ico>i.fa{
+	 transform: rotate(360deg);
+}
+.container-fluid>#navbarTarget>ul>li >a:hover>img.app_pic{
+	 transform: rotate(360deg);
+}
+
+/*main content*/
+#page-container>#content{
+	background-color: white; margin-left:240px; margin-right:20px; padding:20px 20px 20px 10px;
+	min-height: calc(100vh - 168px);
+	overflow: hidden;
+	
+}
+.panel{border: 1px solid #d9d9d9;border-radius: 4px;min-height: 300px;}
+.panel>.panel-heading{ background-color:#7dadeb;-webkit-border-radius: 4px 4px 0 0;-moz-border-radius: 4px 4px 0 0;border-radius: 4px 4px 0 0;display: none}/*面板标题颜色*/
+.panel-title {font-size: 18px;line-height: 30px; text-align:left;}
+.panel-heading-btn {float: right;line-height: 30px;}
+.table-bordered>thead>tr>th{border-bottom: 2px solid #00afec !important;background: #f7f7f6;}		
+		
+#myTable-header.fixed,#myTable-fix.fixed {
+    top: 0px;
+}
+		
+#page-container .bg-black{
+	background: #00427d !important;
+}			
+#page-container.login-container{
+	background: none;
+	margin-top: 80px;
+}
+
+

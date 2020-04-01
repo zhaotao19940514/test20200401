@@ -1,0 +1,16 @@
+
+
+#jdbc properties 
+driverClassName=oracle.jdbc.driver.OracleDriver
+url=jdbc:oracle:thin:@10.52.0.138:1521:QTKDB
+#url=jdbc:oracle:thin:@10.52.0.213:1521:QTKDB1
+username=qtk
+password=qtk
+validationQuery=select 1 from dual
+dialect=org.hibernate.dialect.Oracle10gDialect
+#second level cache config
+enableCache=false
+cacheServers=127.0.0.1:11211
+
+d
+atabase.type=oracle

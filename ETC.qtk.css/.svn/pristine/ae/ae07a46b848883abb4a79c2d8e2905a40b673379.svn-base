@@ -1,0 +1,55 @@
+# -- messages used in decorators/default.jsp --
+webapp.name=黔通卡客服系统
+readonly=Read only
+reset=Reset
+true=Yes
+false=No
+add=Add
+add.success=Add success
+add.fail=Add failed
+save=Save
+save.success=Save success
+save.fail=Save failed
+modi=Modify
+modi.success=Modify success
+modi.fail=Modify failed
+del=Delete
+del.success=Delete Success
+del.fail=Delete failed
+search=Search
+search.condition=Search condition
+search.result=Search result
+hidden=Hide
+show=Show
+select.select=Select all
+close=Close
+
+#acl messages
+acl.login=Login
+acl.logout=Logout
+acl.relogin=ReLogin
+acl.changeuser=Change user
+acl.password=Password：
+acl.username=Username：
+acl.oldpass=Old pass：
+acl.newpass1=New pass：
+acl.newpass2=New pass commit：
+acl.remember=Remember me
+acl.nouser=User not exist
+acl.loginerror=Session Invalid
+acl.reachMax=用户到达最大并发数({0}),不允许再登录
+acl.passWrong=Password error.
+
+# -- validator errors --
+errors.invalid=无效
+errors.maxlength=不能大于 {0} 个字符
+errors.minlength=不能少于 {0} 个字符
+errors.phone=无效电话号码
+errors.fax=无效传真号码
+errors.email=无效邮件地址
+errors.zip=无效邮政编码
+errors.required=必填项
+errors.noselect=必选项
+errors.url=无效URL地址
+errors.date=无效的日期格式
+errors.integer=必须为一数值

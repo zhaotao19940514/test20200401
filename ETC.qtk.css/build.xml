@@ -1,0 +1,331 @@
+<?xml version="1.0"?>
+
+<project name="ETC.qtk.css" basedir="." default="build">
+	<property file="build.properties" />
+	<property file="war/WEB-INF/conf/jdbc.properties" />
+
+	<property name="resource.dir" value="resources" />
+	<property name="repository.dir" value="../TJLib" />
+	<property name="report.dir" value="resources/report" />
+	<property name="sql.dir" value="resources/sql" />
+	<property name="src.dir" value="src" />
+	<property name="test.dir" value="test" />
+	<property name="dist.dir" value="dist" />
+	<property name="docs.dir" value="${dist.dir}/docs" />
+	<property name="web.dir" value="war" />
+	<property name="jsp.dir" value="war/WEB-INF/jsp" />
+	<property name="build.dir" value="${web.dir}/WEB-INF/classes" />
+	<property name="preweave.dir" value="${web.dir}/WEB-INF/preweave" />
+	<property name="lib.dir" value="${web.dir}/WEB-INF/lib" />
+	<property name="runtimeLib.dir" value="${resource.dir}/runtimeLib" />
+	<property name="name" value="css" />
+	<property name="basePackage" value="cn.com.taiji.${name}" />
+	<property name="version" value="1.0" />
+	<property name="name.cn" value="黔通卡客服系统" />
+
+	<path id="ant-taiji-classpath">
+		<fileset dir="${repository.dir}/lib/runtime">
+			<include name="*ant*.jar" />
+		</fileset>
+		<fileset dir="${repository.dir}/lib/aspectj/1.8">
+			<include name="aspectjtools-1.8.jar" />
+		</fileset>
+		<fileset dir="${repository.dir}/lib/yui/compressor">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+	<path id="master-classpath">
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar" />
+			<exclude name="${name}.jar" />
+		</fileset>
+		<fileset dir="${runtimeLib.dir}">
+			<include name="**/*.jar" />
+		</fileset>
+		<pathelement path="${build.dir}" />
+	</path>
+
+	<path id="master-sourcepath">
+		<pathelement path="${src.dir}/dao" />
+		<pathelement path="${src.dir}/manager" />
+		<pathelement path="${src.dir}/web" />
+	</path>
+
+	<path id="master-testpath">
+		<pathelement path="${test.dir}/dao" />
+		<pathelement path="${test.dir}/manager" />
+		<pathelement path="${test.dir}/web" />
+	</path>
+
+	<target name="copy-web" description="copy js css files">
+		<copy todir="${web.dir}" preservelastmodified="true">
+			<fileset dir="${repository.dir}/web/1.0">
+				<exclude name="WEB-INF/jsp/taiji1/**"/>
+				<exclude name="WEB-INF/jsp/coloradmin/**"/>
+				<exclude name="WEB-INF/jsp/tc/**"/>
+				<exclude name="WEB-INF/jsp/etc/**"/>
+			</fileset>
+		</copy>
+		<!-- 请注意，此命令会覆盖原文件 -->
+		<copy todir="${web.dir}/WEB-INF/jsp" overwrite="false" flatten="true">
+			<fileset dir="${repository.dir}/web/1.0/WEB-INF/jsp">
+				<!-- <include name="taiji1/**.jsp" /> -->
+				<include name="coloradmin/**.jsp" /> 
+			</fileset>
+		</copy>
+	</target>
+
+	<taskdef name="copyjar" classname="cn.com.taiji.ant.task.CopyJarTask" classpathref="ant-taiji-classpath" />
+	<target name="copy-jar" depends="copy-web">
+		<mkdir dir="${lib.dir}" />
+		<mkdir dir="${runtimeLib.dir}" />
+		<copyjar libdir="${lib.dir}" runtimelib="${runtimeLib.dir}" overwrite="false" version="${version}" />
+	</target>
+	<taskdef name="gendao" classname="cn.com.taiji.ant.task.GenDaoTask" classpathref="ant-taiji-classpath" />
+	<target name="genDao">
+		<gendao basepackage="${basePackage}" srcfloder="src/dao/" />
+	</target>
+	<taskdef name="genjparepo" classname="cn.com.taiji.ant.task.GenJpaRepoTask" classpathref="ant-taiji-classpath" />
+	<target name="genJpaRepo">
+		<genjparepo basepackage="${basePackage}" srcfloder="src/dao/" />
+	</target>
+	<taskdef name="createproject" classname="cn.com.taiji.ant.task.CreateProjectTask" classpathref="ant-taiji-classpath" />
+	<target name="createProject">
+		<createproject appname="${name}" rawprojectname="TJ.sample-role" />
+	</target>
+	<taskdef name="jscsscompress" classname="cn.com.taiji.ant.task.JsCssCompressTask" classpathref="ant-taiji-classpath" />
+	<target name="JSCssCompress">
+		<jscsscompress outputfile="${web.dir}/js/tjlib/jquery.tjlib.js" charset="UTF-8" linebreak="1000">
+			<path location="${web.dir}/plugins/form/jquery.form.js" />
+			<path location="${web.dir}/plugins/metadata/jquery.metadata.js" />
+			<path location="${web.dir}/plugins/chosen/chosen.jquery-1.6.min.js" />
+			<path location="${web.dir}/plugins/chosen/ajax-chosen.js" />
+			<path location="${web.dir}/plugins/base64/base64.js" />
+			<path location="${web.dir}/js/tjlib/apps.js" />
+			<path location="${web.dir}/plugins/jquery-ui-1.10.4/ui/minified/jquery-ui.min.js" />
+			<path location="${web.dir}/plugins/validate/js/1.15/jquery.validate.min.js" />
+			<path location="${web.dir}/plugins/validate/js/jquery.validate.taiji.js" />
+			<path location="${web.dir}/plugins/validate/js/messages_cn.js" />
+			<path location="${web.dir}/plugins/bootstrap-3.1.1/js/bootstrap.min.js" />
+			<path location="${web.dir}/plugins/bootstrap-select/bootstrap-select.min.js" />
+			<path location="${web.dir}/plugins/bootstrap-wizard/jquery.bootstrap.wizard.min.js" />
+			<path location="${web.dir}/plugins/slimscroll/jquery.slimscroll-1.2.0.min.js" />
+			<path location="${web.dir}/plugins/icheck/icheck.js" />
+			<path location="${web.dir}/plugins/jquery-confirm/jquery-confirm.js" />
+		</jscsscompress>
+		<jscsscompress outputfile="${web.dir}/js/tjlib/jquery.taiji.all.js" charset="UTF-8" linebreak="1000">
+			<path location="${web.dir}/js/tjlib/jquery.taiji-3.0.js" />
+		</jscsscompress>
+		<jscsscompress outputfile="${web.dir}/css/manage.css" charset="UTF-8" linebreak="1000">
+			<path location="${web.dir}/plugins/jquery-ui-1.10.4/jquery-ui.css" />
+			<path location="${web.dir}/plugins/bootstrap-3.1.1/css/bootstrap.css" />
+			<path location="${web.dir}/plugins/bootstrap-select/bootstrap-select.min.css" />
+			<path location="${web.dir}/css/animate.css" />
+			<path location="${web.dir}/css/style-min.css" />
+			<path location="${web.dir}/css/style-responsive.css" />
+			<path location="${web.dir}/css/chosen.css" />
+			<path location="${web.dir}/css/magic-check.min.css" />
+			<path location="${web.dir}/css/stylex.css" />
+		</jscsscompress>
+	</target>
+	<!-- 查找"iajc" task -->
+	<taskdef name="iajc" classname="org.aspectj.tools.ant.taskdefs.AjcTask" classpathref="ant-taiji-classpath" />
+	<target name="build" depends="copy-jar" description="Compile main source tree java files">
+		<mkdir dir="${preweave.dir}" />
+		<mkdir dir="${build.dir}" />
+		<javac destdir="${preweave.dir}" debug="true" debuglevel="lines,source" includeantruntime="false" compiler="javac1.8" encoding="utf-8">
+			<src refid="master-sourcepath" />
+			<classpath refid="master-classpath" />
+			<compilerarg value="-Xlint:deprecation" />
+			<compilerarg value="-Xlint:unchecked" />
+		</javac>
+		<!--AspectJ切面类所在位置如:org.springframework.transaction.aspectj.AnnotationTransactionAspect切面的位置-->
+		<iajc destdir="${build.dir}" encoding="utf-8" debug="true" failonerror="true" showweaveinfo="true">
+			<classpath refid="master-classpath" />
+			<aspectpath path="${lib.dir}/spring-aspects-5.0.jar" />
+			<inpath path="${preweave.dir}" />
+		</iajc>
+		<copy todir="${build.dir}" preservelastmodified="true">
+			<fileset dir="${src.dir}/dao">
+				<exclude name="**/*.java" />
+			</fileset>
+			<fileset dir="${src.dir}/manager">
+				<exclude name="**/*.java" />
+			</fileset>
+			<fileset dir="${src.dir}/web">
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+		<native2ascii src="resources/messages" dest="${build.dir}" encoding="utf-8">
+			<include name="*.properties" />
+		</native2ascii>
+	</target>
+
+	<target name="build-test" depends="build" description="Compile test source tree java files">
+		<mkdir dir="${build.dir}" />
+		<javac destdir="${build.dir}" debug="true" debuglevel="lines,source" includeantruntime="false" compiler="javac1.8" encoding="utf-8">
+			<src refid="master-testpath" />
+			<classpath refid="master-classpath" />
+		</javac>
+		<copy todir="${build.dir}" preservelastmodified="true">
+			<fileset dir="${test.dir}/dao">
+				<exclude name="**/*.java" />
+			</fileset>
+			<fileset dir="${test.dir}/manager">
+				<exclude name="**/*.java" />
+			</fileset>
+			<fileset dir="${test.dir}/web">
+				<exclude name="**/*.java" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="jarSrc-clean" depends="clean" description="Jar the src">
+		<antcall target="jarSrc" />
+	</target>
+
+	<target name="jarSrc" depends="build" description="Jar the src">
+		<jar destfile="${lib.dir}/${name}.jar">
+			<fileset dir="${build.dir}">
+				<include name="**/*" />
+				<exclude name="*.*" />
+			</fileset>
+		</jar>
+		<copy todir="${dist.dir}" overwrite="true">
+			<fileset dir="${lib.dir}">
+				<include name="${name}.jar" />
+			</fileset>
+		</copy>
+		<jar destfile="${repository.dir}/lib/taiji/${name}/${name}.jar">
+			<fileset dir="${build.dir}">
+				<include name="cn/com/taiji/${name}/entity/**" />
+				<include name="cn/com/taiji/${name}/dao/**" />
+				<include name="cn/com/taiji/${name}/repo/**" />
+				<include name="cn/com/taiji/${name}/util/**" />
+			</fileset>
+		</jar>
+		<jar destfile="${repository.dir}/lib/taiji/protocol/${name}-fileprotocol-${version}.jar">
+			<fileset dir="${build.dir}">
+				<include name="cn/com/taiji/${name}/model/comm/protocol/**" />
+			</fileset>
+		</jar>
+		<echo level="info">jar the src success.</echo>
+	</target>
+
+	<target name="deploy" depends="build" description="Deploy application">
+		<copy todir="${deploy.path}/${name}" preservelastmodified="true">
+			<fileset dir="${web.dir}">
+				<exclude name="data/**" />
+				<exclude name="logs/*" />
+			</fileset>
+		</copy>
+	</target>
+
+	<target name="clean-build" depends="clean,build" description="Clean and build">
+
+	</target>
+
+	<target name="publishBin" depends="jarSrc-clean" description="publish the application">
+		<delete includeEmptyDirs="true">
+			<fileset dir="${build.dir}">
+				<include name="**/*" />
+				<exclude name="*.*" />
+			</fileset>
+		</delete>
+		<war destfile="${dist.dir}/${name}.war" webxml="${web.dir}/WEB-INF/web.xml">
+			<fileset dir="${web.dir}">
+				<include name="**/*.*" />
+				<exclude name="WEB-INF/web.xml" />
+				<exclude name="WEB-INF/preweave/**" />
+				<exclude name="logs/*" />
+				<exclude name="tmp/**" />
+				<exclude name="data/**" />
+			</fileset>
+		</war>
+		<echo level="info">Publish the ${dist.dir}/${name}.war (bin) success^_^</echo>
+	</target>
+
+	<target name="publishSrc" depends="clean" description="publish the src">
+		<antcall target="clean" />
+		<zip destfile="${dist.dir}/${name}-src.zip">
+			<fileset dir="${src.dir}/web" includes="**/**" />
+			<fileset dir="${src.dir}/manager" includes="**/**" />
+			<fileset dir="${src.dir}/dao" includes="**/**" />
+		</zip>
+		<zip destfile="${repository.dir}/lib/taiji/protocol/${name}-fileprotocol-${version}-src.zip">
+			<fileset dir="${src.dir}/manager">
+				<include name="cn/com/taiji/${name}/model/comm/protocol/**" />
+			</fileset>
+		</zip>
+		<zip destfile="${dist.dir}/${name}-total.zip">
+			<fileset dir="." includes="${src.dir}/**" />
+			<fileset dir="." includes="${test.dir}/**" />
+			<fileset dir=".">
+				<include name="${web.dir}/**" />
+				<exclude name="${web.dir}/data/**" />
+				<exclude name="${web.dir}/logs/*" />
+				<exclude name="${web.dir}/tmp/**" />
+			</fileset>
+			<fileset dir="." includes="${resource.dir}/**" />
+			<fileset dir="." includes=".settings/**" />
+			<fileset dir="." includes="*.*" />
+		</zip>
+		<echo level="info">Publish the ${dist.dir}/${name}-src.zip (src) success^_^</echo>
+	</target>
+
+	<target name="dist" description="Distribute the project!">
+		<antcall target="publishBin" />
+		<antcall target="publishSrc" />
+		<echo level="info">Distribute the ${name} success</echo>
+	</target>
+	<target name="clean" description="Clean output directories">
+		<delete includeEmptyDirs="true">
+			<fileset dir="${build.dir}">
+				<include name="**/*" />
+				<exclude name="tests/**" />
+			</fileset>
+			<fileset dir="${lib.dir}">
+				<include name="*.*" />
+			</fileset>
+			<fileset dir="${runtimeLib.dir}">
+				<include name="*.*" />
+			</fileset>
+			<fileset dir="${preweave.dir}">
+				<include name="**/*" />
+			</fileset>
+		</delete>
+		<echo level="info">Clean the project success</echo>
+	</target>
+
+	<target name="junit" depends="clean,build-test">
+		<mkdir dir="${report.dir}" />
+		<junit printsummary="on" fork="false" showoutput="true">
+			<classpath refid="master-classpath" />
+			<formatter type="xml" />
+			<batchtest todir="${report.dir}">
+				<fileset dir="${build.dir}">
+					<include name="tests/cn/com/taiji/sample/manager/**/Test*" />
+				</fileset>
+			</batchtest>
+		</junit>
+		<junitreport todir="${report.dir}">
+			<fileset dir="${report.dir}">
+				<include name="TEST-*.xml" />
+			</fileset>
+			<report format="frames" todir="${report.dir}" />
+		</junitreport>
+	</target>
+
+	<target name="docs" description="Create complete Javadoc documentation">
+		<delete dir="${docs.dir}" />
+		<mkdir dir="${docs.dir}" />
+		<javadoc sourcepathref="master-sourcepath" destdir="${docs.dir}" windowtitle="${name.cn}" encoding="utf-8" source="1.8" author="true" version="true" use="true" packagenames="*">
+			<doctitle>
+				<![CDATA[<h1>${name.cn}</h1>]]></doctitle>
+		<bottom>
+			<![CDATA[<i>太极计算机股份有限公司, 2011.</i>]]></bottom>
+	<classpath refid="master-classpath" />
+</javadoc>
+</target>
+
+</project>

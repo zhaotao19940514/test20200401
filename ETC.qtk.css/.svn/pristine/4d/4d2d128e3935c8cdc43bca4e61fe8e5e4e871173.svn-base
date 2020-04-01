@@ -1,0 +1,6 @@
+eclipse.preferences.version=1
+encoding//resources/messages/ValidationMessages_zh.properties=UTF-8
+encoding//resources/messages/common_en.properties=UTF-8
+encoding//resources/messages/common_zh.properties=UTF-8
+encoding//src/web/oauth_client.properties=UTF-8
+encoding/<project>=UTF-8

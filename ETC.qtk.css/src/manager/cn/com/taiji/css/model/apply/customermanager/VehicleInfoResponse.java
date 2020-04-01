@@ -1,0 +1,394 @@
+package cn.com.taiji.css.model.apply.customermanager;
+
+import java.util.Calendar;
+
+import cn.com.taiji.common.model.BaseModel;
+import cn.com.taiji.qtk.entity.CustomerInfo;
+
+public class VehicleInfoResponse extends BaseModel {
+	//车辆信息主键  UUID
+	private String id;
+	// 车辆编号
+	private String vehicleId;
+	//是否为冷藏运输车
+		private Integer refrigeratedTrucks;
+	// 车牌号
+	private String vehiclePlate;
+
+	// 车牌颜色
+	private Integer vehiclePlateColor;
+
+	// 用户id
+	private String customerId;
+
+	// 机动车所有人名称
+	private String ownerName;
+
+	// 所有人证件类型
+	private Integer ownerIdType;
+
+	// 所有人证件号码
+	private String ownerIdNum;
+
+	// 所有人联系方式
+	private String ownerTel;
+
+	// 所有人联系地址
+	private String ownerAddress;
+
+	// 指定联系人列表
+	private String contacts;
+
+	// 录入方式
+	private Integer registeredType;
+
+	// 渠道编号
+	private String channelId;
+
+	// 录入时间
+	private String registeredTime;
+
+	// 档案编号
+	private String fileNum;
+
+	// 行驶证车辆类型
+	private String vehicleType;
+
+	// 行驶证品牌型号
+	private String vehicleModel;
+
+	// 车辆使用性质
+	private Integer useCharacter;
+
+	// 车辆识别代号
+	private String VIN;
+
+	// 车辆发动机号
+	private String engineNum;
+
+	// 注册日期
+	private String registerDate;
+
+	// 发证日期
+	private String issueDate;
+
+	// 核定载人数
+	private Integer approvedCount;
+
+	// 总质量
+	private Integer totalMass;
+
+	// 整备质量
+	private Integer maintenanceMass;
+
+	// 核定载质量
+	private Integer permittedWeight;
+
+	// 外廓尺寸
+	private String outsideDimensions;
+
+	// 准牵引总质量
+	private Integer permittedTowWeight;
+
+	// 检验记录
+	private String testRecord;
+
+	// 车轮数
+	private Integer wheelCount;
+
+	// 车轴数
+	private Integer axleCount;
+
+	// 轴距
+	private Integer axleDistance;
+
+	// 轴型
+	private String axisType;
+
+	// 用户表外键
+	private CustomerInfo customerInfo;
+
+	// 提交时间
+	private Calendar createTime;
+	// 录入时间
+	private Calendar updateTime;
+	// 收费车型
+	private Integer type;
+	// 发现套餐编号
+	private String packageNum;
+	// 车长
+	private Integer vehicleLength;
+	// 车宽
+	private Integer vehicleWidth;
+	// 车高
+	private Integer vehicleHeight;
+	//应急车辆标识 0-非应急车辆  1-应急车辆
+	private Integer emergencyFlag;
+	
+	public String getId() {
+		return id;
+	}
+	public void setId(String id) {
+		this.id = id;
+	}
+	public String getVehicleId() {
+		return vehicleId;
+	}
+	public void setVehicleId(String vehicleId) {
+		this.vehicleId = vehicleId;
+	}
+	public String getVehiclePlate() {
+		return vehiclePlate;
+	}
+	public void setVehiclePlate(String vehiclePlate) {
+		this.vehiclePlate = vehiclePlate;
+	}
+	public Integer getVehiclePlateColor() {
+		return vehiclePlateColor;
+	}
+	public void setVehiclePlateColor(Integer vehiclePlateColor) {
+		this.vehiclePlateColor = vehiclePlateColor;
+	}
+	public String getCustomerId() {
+		return customerId;
+	}
+	public void setCustomerId(String customerId) {
+		this.customerId = customerId;
+	}
+	public String getOwnerName() {
+		return ownerName;
+	}
+	public void setOwnerName(String ownerName) {
+		this.ownerName = ownerName;
+	}
+	public Integer getOwnerIdType() {
+		return ownerIdType;
+	}
+	public void setOwnerIdType(Integer ownerIdType) {
+		this.ownerIdType = ownerIdType;
+	}
+	public String getOwnerIdNum() {
+		return ownerIdNum;
+	}
+	public void setOwnerIdNum(String ownerIdNum) {
+		this.ownerIdNum = ownerIdNum;
+	}
+	public String getOwnerTel() {
+		return ownerTel;
+	}
+	public void setOwnerTel(String ownerTel) {
+		this.ownerTel = ownerTel;
+	}
+	public String getOwnerAddress() {
+		return ownerAddress;
+	}
+	public void setOwnerAddress(String ownerAddress) {
+		this.ownerAddress = ownerAddress;
+	}
+	public String getContacts() {
+		return contacts;
+	}
+	public void setContacts(String contacts) {
+		this.contacts = contacts;
+	}
+	public Integer getRegisteredType() {
+		return registeredType;
+	}
+	public void setRegisteredType(Integer registeredType) {
+		this.registeredType = registeredType;
+	}
+	public String getChannelId() {
+		return channelId;
+	}
+	public void setChannelId(String channelId) {
+		this.channelId = channelId;
+	}
+	public String getRegisteredTime() {
+		return registeredTime;
+	}
+	public void setRegisteredTime(String registeredTime) {
+		this.registeredTime = registeredTime;
+	}
+	public String getFileNum() {
+		return fileNum;
+	}
+	public void setFileNum(String fileNum) {
+		this.fileNum = fileNum;
+	}
+	public String getVehicleType() {
+		return vehicleType;
+	}
+	public void setVehicleType(String vehicleType) {
+		this.vehicleType = vehicleType;
+	}
+	public String getVehicleModel() {
+		return vehicleModel;
+	}
+	public void setVehicleModel(String vehicleModel) {
+		this.vehicleModel = vehicleModel;
+	}
+	public Integer getUseCharacter() {
+		return useCharacter;
+	}
+	public void setUseCharacter(Integer useCharacter) {
+		this.useCharacter = useCharacter;
+	}
+	public String getVIN() {
+		return VIN;
+	}
+	public void setVIN(String vIN) {
+		VIN = vIN;
+	}
+	public String getEngineNum() {
+		return engineNum;
+	}
+	public void setEngineNum(String engineNum) {
+		this.engineNum = engineNum;
+	}
+	public String getRegisterDate() {
+		return registerDate;
+	}
+	public void setRegisterDate(String registerDate) {
+		this.registerDate = registerDate;
+	}
+	public String getIssueDate() {
+		return issueDate;
+	}
+	public void setIssueDate(String issueDate) {
+		this.issueDate = issueDate;
+	}
+	public Integer getApprovedCount() {
+		return approvedCount;
+	}
+	public void setApprovedCount(Integer approvedCount) {
+		this.approvedCount = approvedCount;
+	}
+	public Integer getTotalMass() {
+		return totalMass;
+	}
+	public void setTotalMass(Integer totalMass) {
+		this.totalMass = totalMass;
+	}
+	public Integer getMaintenanceMass() {
+		return maintenanceMass;
+	}
+	public void setMaintenanceMass(Integer maintenanceMass) {
+		this.maintenanceMass = maintenanceMass;
+	}
+	public Integer getPermittedWeight() {
+		return permittedWeight;
+	}
+	public void setPermittedWeight(Integer permittedWeight) {
+		this.permittedWeight = permittedWeight;
+	}
+	public String getOutsideDimensions() {
+		return outsideDimensions;
+	}
+	public void setOutsideDimensions(String outsideDimensions) {
+		this.outsideDimensions = outsideDimensions;
+	}
+	public Integer getPermittedTowWeight() {
+		return permittedTowWeight;
+	}
+	public void setPermittedTowWeight(Integer permittedTowWeight) {
+		this.permittedTowWeight = permittedTowWeight;
+	}
+	public String getTestRecord() {
+		return testRecord;
+	}
+	public void setTestRecord(String testRecord) {
+		this.testRecord = testRecord;
+	}
+	public Integer getWheelCount() {
+		return wheelCount;
+	}
+	public void setWheelCount(Integer wheelCount) {
+		this.wheelCount = wheelCount;
+	}
+	public Integer getAxleCount() {
+		return axleCount;
+	}
+	public void setAxleCount(Integer axleCount) {
+		this.axleCount = axleCount;
+	}
+	public Integer getAxleDistance() {
+		return axleDistance;
+	}
+	public void setAxleDistance(Integer axleDistance) {
+		this.axleDistance = axleDistance;
+	}
+	public String getAxisType() {
+		return axisType;
+	}
+	public void setAxisType(String axisType) {
+		this.axisType = axisType;
+	}
+	public CustomerInfo getCustomerInfo() {
+		return customerInfo;
+	}
+	public void setCustomerInfo(CustomerInfo customerInfo) {
+		this.customerInfo = customerInfo;
+	}
+	public Calendar getCreateTime() {
+		return createTime;
+	}
+	public void setCreateTime(Calendar createTime) {
+		this.createTime = createTime;
+	}
+	public Calendar getUpdateTime() {
+		return updateTime;
+	}
+	public void setUpdateTime(Calendar updateTime) {
+		this.updateTime = updateTime;
+	}
+	public Integer getType() {
+		return type;
+	}
+	public void setType(Integer type) {
+		this.type = type;
+	}
+	public String getPackageNum() {
+		return packageNum;
+	}
+	public void setPackageNum(String packageNum) {
+		this.packageNum = packageNum;
+	}
+	public Integer getVehicleLength() {
+		return vehicleLength;
+	}
+	public void setVehicleLength(Integer vehicleLength) {
+		this.vehicleLength = vehicleLength;
+	}
+	public Integer getVehicleWidth() {
+		return vehicleWidth;
+	}
+	public void setVehicleWidth(Integer vehicleWidth) {
+		this.vehicleWidth = vehicleWidth;
+	}
+	public Integer getVehicleHeight() {
+		return vehicleHeight;
+	}
+	public void setVehicleHeight(Integer vehicleHeight) {
+		this.vehicleHeight = vehicleHeight;
+	}
+	/**
+	 * @return refrigeratedTrucks
+	 */
+	public Integer getRefrigeratedTrucks() {
+		return refrigeratedTrucks;
+	}
+	/**
+	 * @param refrigeratedTrucks 要设置的 refrigeratedTrucks
+	 */
+	public void setRefrigeratedTrucks(Integer refrigeratedTrucks) {
+		this.refrigeratedTrucks = refrigeratedTrucks;
+	}
+	public Integer getEmergencyFlag() {
+		return emergencyFlag;
+	}
+	public void setEmergencyFlag(Integer emergencyFlag) {
+		this.emergencyFlag = emergencyFlag;
+	}
+	
+	
+}

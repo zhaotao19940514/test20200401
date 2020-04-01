@@ -1,0 +1,110 @@
+package cn.com.taiji.css.manager.issuetranscation;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.google.common.collect.Lists;
+
+import cn.com.taiji.common.manager.AbstractManager;
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.css.model.acl.ZTreeItem;
+import cn.com.taiji.css.model.administration.pkg.IssuePackageColRequest;
+import cn.com.taiji.qtk.entity.Agency;
+import cn.com.taiji.qtk.entity.PerCancel;
+import cn.com.taiji.qtk.entity.ServiceHall;
+import cn.com.taiji.qtk.repo.jpa.AgencyRepo;
+import cn.com.taiji.qtk.repo.jpa.PerCancelRepo;
+import cn.com.taiji.qtk.repo.jpa.ServiceHallRepo;
+
+@Service
+public class PerCancelManagerImpl extends AbstractManager implements PerCancelManager {
+	@Autowired
+	private PerCancelRepo perCancelRepo;
+	@Autowired
+	private ServiceHallRepo serviceHallRepo;
+	@Autowired
+	private AgencyRepo agencyRepo;	
+
+
+
+	@Transactional
+	@Override
+	public PerCancel update(PerCancel perCancel, String userName) throws ManagerException {
+		perCancelRepo.deleteAll();
+		logger.info(perCancel.toString());
+		ArrayList<PerCancel> perCancelList = Lists.newArrayList();
+		String[] agencyIds = perCancel.getAgencyIds();
+		for (String agencyId : agencyIds) {
+			PerCancel perCancel2 = new PerCancel();
+			perCancel2.setOperation(userName);
+			perCancel2.setAgencyId(agencyId);
+			perCancelList.add(perCancel2);
+		}
+		perCancelRepo.saveAll(perCancelList);
+		perCancel.setOperation(userName);
+		perCancel.setAgencyIds(null);
+		return perCancel;
+	}
+
+
+
+	@Override
+	public List<PerCancel> findAll() {
+		return perCancelRepo.findAll();
+	}
+
+	
+	@Override
+	public List<ZTreeItem> getCurrentConf() {
+		List<ZTreeItem> rs = new ArrayList<ZTreeItem>();
+		List<Agency> agencyList = agencyRepo.findAll();
+		System.out.println(agencyList.size());
+		for (Agency agency : agencyList) {
+			if(("52010102002").equals(agency.getAgencyId())||("52010102007").equals(agency.getAgencyId()))continue;
+			System.out.println("---"+agency.getFileDir());
+			List<ServiceHall> serviceHallList = serviceHallRepo.list(new IssuePackageColRequest(agency.getFileDir()));
+			if (serviceHallList.size() > 0) {
+				ZTreeItem item = new ZTreeItem();
+				item.setId(agency.getAgencyId());
+				item.setName(agency.getName());
+				List<ZTreeItem> children = handleChildren(serviceHallList);
+				boolean checked = false;
+				for (ZTreeItem r : children) {
+					if (r.isChecked() == true) {
+						checked = true;
+					}
+				}
+				item.setChecked(checked);
+				logger.info(String.valueOf(checked));
+				item.setChildren(children);
+				rs.add(item);
+			}
+		}
+		return rs;
+	}
+
+	private List<ZTreeItem> handleChildren(List<ServiceHall> res) {
+		List<ZTreeItem> list = new ArrayList<ZTreeItem>();
+		List<String> ipsList = perCancelRepo.agencyIdList();
+		System.out.println(res.size());
+		for (ServiceHall serviceHall : res) {
+			ZTreeItem item = new ZTreeItem();
+			item.setId(serviceHall.getAgencyId());
+			item.setName(serviceHall.getName());			
+			if(ipsList.size()>0) {
+				for (String ips : ipsList) {
+					if(ips.equals(serviceHall.getAgencyId())) {
+						item.setChecked(true);
+					}
+				}
+			}
+			list.add(item);
+		}
+		System.out.println(list.size());
+		return list;
+	}
+}

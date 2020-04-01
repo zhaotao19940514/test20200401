@@ -1,0 +1,275 @@
+.login  {
+    position: relative;
+    margin:90px 0px;
+}
+.alert {
+    border: medium none;
+    position: fixed;
+    top: 40%;
+    left: 50%;
+    margin-left:-200px;
+    display:none;
+    z-index: 2000;
+    min-width:200px;
+}
+.alert-success {
+	 z-index: 2001;
+}
+.navbar-brand{
+	width:500px;
+}
+
+.panel.panel-expand .panel-toolbar ,
+.panel.panel-expand .panel-footer {
+    display: none;
+}
+
+.taiji-logo{
+	background: url(../images/taiji_logo.png) no-repeat left top ; 
+	height:100%;
+	width: 120px;
+	display: inline-block;
+	background-size:contain;
+}
+
+.sidebar-minified .sidebar .nav li.has-sub > .sub-menu {
+    display: none !important;
+}
+.sidebar-minified .sidebar li.has-sub:focus > .sub-menu, 
+.sidebar-minified .sidebar li.has-sub:hover > .sub-menu {
+    display: block !important;
+    overflow: visible !important;
+}
+/*解决左侧菜单隐藏后不能滚动，因 data-scrollbar影响hover问题 */
+.sidebar-minified .sidebar {
+	 position: absolute;
+	 width: 60px;
+} 
+.sidebar-minified [data-scrollbar=true] {
+		overflow:visible !important;
+}
+.sidebar-minified .sidebar-bg {
+    width: 60px;
+}
+.sidebar-bg {
+    background: #2d353c none repeat scroll 0 0;
+    bottom: 0;
+    left: 0;
+    position: fixed;
+    top: 0;
+    width: 220px;
+    z-index: 0;
+}
+.row > .ui-sortable[class*="col-"] {
+    min-height: 50px;
+}
+
+/* wlj add begin */
+.pagination > li > span.input{
+		border:none;
+		margin:0;
+		padding:6px 0px 6px 6px;
+}
+
+.taiji_sortable::after {
+    border-left: 4px dashed;
+    border-right: 0px ;
+    border-bottom:4px solid transparent ;
+    border-top: 4px solid transparent;
+    display: inline-block;
+    transform:rotate(0deg);
+    margin-left:2px;
+    content:'';
+}
+.taiji_asc::after {
+   transform:rotate(-90deg);
+}
+.taiji_desc::after {
+	 transform:rotate(90deg);
+}
+
+.table-hover > tbody > tr:hover > td, .table-hover > tbody > tr:hover > th {
+    background: #dbf0f7 none repeat scroll 0 0 !important;
+}
+.table tr.taiji_clicked > td {
+	background: #dbf0f7 none repeat scroll 0 0 !important;
+}
+.taiji_placeholder{position:absolute;color:#999;z-index:2000;font-size:12px}
+/**  选择查询条件*/
+.taiji_search_condition .cond_item,.select_result .select_item{
+    display: inline-block;
+    vertical-align: middle;
+	background: #ffffff none repeat scroll 0 0;
+    border: 1px solid #ff5b57;
+    border-radius: 3px;
+    margin: 0 3px;
+}
+.taiji_search_condition .cond_item>*,.select_result .select_item>*{
+	float: left;
+    display:inline-block;
+    font-size: 12px;
+    line-height: 1.42857;
+    text-align: center;
+    vertical-align: middle;
+}
+.taiji_search_condition .cond_item>*:first-child,.select_result .select_item>*:first-child{
+	margin-left: 2px;
+}
+.taiji_search_condition .cond_item i,.select_result .select_item i{
+	background: #ff5b57 none repeat scroll 0 0;
+	color: white;
+	cursor: pointer;
+	margin-left: 2px;
+    width: 16px;
+}
+.taiji_search_condition .cond_item:hover i ,.select_result .select_item:hover i{
+	background: #cc4946 none repeat scroll 0 0;
+}
+
+#myTable-fix{
+    position: absolute;
+    overflow: hidden;
+	background-color: steelblue;
+}
+#myTable-fix.fixed{
+    position: fixed;
+    top: 54px;
+    z-index: 200;
+}
+
+#myTable-header{
+    overflow: hidden;
+    z-index: 100;
+    width: 100%;
+}
+#myTable-header.fixed{
+	background: #d0d3d5;
+    position: fixed;
+    top: 54px;	
+}
+#myTable-column{
+	position: absolute;
+	overflow: hidden;
+}
+.taiji_table_float,.taiji_column_float{
+	overflow-x: auto;
+	width: 100%;
+}
+
+
+#myTable-fix>table{
+	max-width:10000px !important;
+	border: 0px none;
+	margin: 0;	
+}
+
+#myTable-header>table{
+	 max-width:10000px !important;
+	 margin: 0;		
+	 border-top: 1px solid #ddd;
+}
+
+#myTable-column>table{
+	max-width:10000px !important;
+	border: 0px none;
+	margin: 0;	
+	background-color: #d0d3d5; 
+}
+
+.taiji_table_float>table{
+	max-width:10000px !important;
+}
+.taiji_column_float>table{
+	max-width:10000px !important;
+}
+.taiji_table_float.fixed>table{
+	margin-top: 0px !important;
+}
+th.taiji_column_compress>span{
+	pointer-events: none;
+	display: block;
+	margin-right: 12px;
+}
+th.taiji_column_compress.on{
+	width: 50px !important;
+}
+th.taiji_column_compress::before{
+	content: "\f066";
+	font: normal normal normal 14px/1 FontAwesome;
+	float: right;
+}
+th.taiji_column_compress.on::before{
+	content: "\f065";
+}
+table.col-compress1 tr>th:nth-child(1)>span,
+table.col-compress1 tr>td:nth-child(1)>span,
+table.col-compress2 tr>th:nth-child(2)>span,
+table.col-compress2 tr>td:nth-child(2)>span,
+table.col-compress3 tr>th:nth-child(3)>span,
+table.col-compress3 tr>td:nth-child(3)>span,
+table.col-compress4 tr>th:nth-child(4)>span,
+table.col-compress4 tr>td:nth-child(4)>span,
+table.col-compress5 tr>th:nth-child(5)>span,
+table.col-compress5 tr>td:nth-child(5)>span,
+table.col-compress6 tr>th:nth-child(6)>span,
+table.col-compress6 tr>td:nth-child(6)>span,
+table.col-compress7 tr>th:nth-child(7)>span,
+table.col-compress7 tr>td:nth-child(7)>span,
+table.col-compress8 tr>th:nth-child(8)>span,
+table.col-compress8 tr>td:nth-child(8)>span,
+table.col-compress9 tr>th:nth-child(9)>span,
+table.col-compress9 tr>td:nth-child(9)>span,
+table.col-compress10 tr>th:nth-child(10)>span,
+table.col-compress10 tr>td:nth-child(10)>span,
+table.col-compress11 tr>th:nth-child(11)>span,
+table.col-compress11 tr>td:nth-child(11)>span,
+table.col-compress12 tr>th:nth-child(12)>span,
+table.col-compress12 tr>td:nth-child(12)>span,
+table.col-compress13 tr>th:nth-child(13)>span,
+table.col-compress13 tr>td:nth-child(13)>span,
+table.col-compress14 tr>th:nth-child(14)>span,
+table.col-compress14 tr>td:nth-child(14)>span,
+table.col-compress15 tr>th:nth-child(15)>span,
+table.col-compress15 tr>td:nth-child(15)>span,
+table.col-compress16 tr>th:nth-child(16)>span,
+table.col-compress16 tr>td:nth-child(16)>span,
+table.col-compress17 tr>th:nth-child(17)>span,
+table.col-compress17 tr>td:nth-child(17)>span,
+table.col-compress18 tr>th:nth-child(18)>span,
+table.col-compress18 tr>td:nth-child(18)>span,
+table.col-compress19 tr>th:nth-child(19)>span,
+table.col-compress19 tr>td:nth-child(19)>span,
+table.col-compress20 tr>th:nth-child(20)>span,
+table.col-compress20 tr>td:nth-child(20)>span,
+table.col-compress21 tr>th:nth-child(21)>span,
+table.col-compress21 tr>td:nth-child(21)>span,
+table.col-compress22 tr>th:nth-child(22)>span,
+table.col-compress22 tr>td:nth-child(22)>span,
+table.col-compress23 tr>th:nth-child(23)>span,
+table.col-compress23 tr>td:nth-child(23)>span,
+table.col-compress24 tr>th:nth-child(24)>span,
+table.col-compress24 tr>td:nth-child(24)>span,
+table.col-compress25 tr>th:nth-child(25)>span,
+table.col-compress25 tr>td:nth-child(25)>span
+{
+	display: none;
+}
+
+
+.jconfirm .jconfirm-box div.content-pane .content {
+    margin: 0;
+    padding: 0;
+}
+/* header页面时间 */
+.clock {padding: 12px 15px;}
+#Date { font-family:Arial, Helvetica, sans-serif; font-size:12px;line-height:30px; text-align:center;float: left; }
+.clock ul { margin:0 auto; padding:0px 3px; list-style:none; text-align:center;float:left;}
+.clock ul li { display:inline-block; font-size:30px; line-height:30px;text-align:center; font-family:Arial, Helvetica, sans-serif; }
+.clock #hours,.clock #min,.clock #sec{width:35px;}
+.clock #point { position:relative; animation:mymove 1s ease infinite; padding-left:2px; padding-right:2px; }
+@keyframes mymove 
+{
+0% { opacity:1.0; text-shadow:0 0 20px #00c6ff; }
+50% { opacity:0; text-shadow:none; }
+100% {opacity:1.0; text-shadow:0 0 20px #00c6ff; }	
+}

@@ -1,0 +1,40 @@
+<%@ page contentType="text/html;charset=utf-8"%>
+<%@ include file="/WEB-INF/jsp/include.jsp"%>
+
+<tr>
+	<td>${fn:escapeXml(voStatus.count)}</td>
+	<td>${fn:escapeXml(vo.cardId)}</td>
+	<td>${fn:escapeXml(vo.customerName)}</td>
+	<td>${fn:replace(vo.customerIdNum, fn:substring(vo.customerIdNum, 6, 14), "***")} </td>
+	<td>${vo.cancelTime }</td> 
+	<td>
+		 <c:forEach items="${CardRefundDetailType}" var='re'>
+			 <c:if test="${re.typeCode eq vo.type}">${re.value}</c:if> 
+		</c:forEach> 
+	</td>
+	<%-- <td> <fmt:formatNumber value="${vo.refundBalance/100}" pattern="#.##" minFractionDigits="2" > </fmt:formatNumber></td> --%>
+	<td>
+	 	<c:choose>
+			<c:when test="${vo.refundType eq 'WTJTF'}">
+				待确认
+			</c:when>
+			<c:otherwise>
+			<fmt:formatNumber value="${vo.refundBalance/100}" pattern="#.##" minFractionDigits="2" > </fmt:formatNumber>
+			</c:otherwise>
+		</c:choose>
+	 </td>
+	<td>
+		<c:if test="${vo.refundType eq  'GLYQR'}">
+			<a  href="javaScript:void(0);" id="compleRefund" refundType = '${vo.refundType }' refundCardId ="${vo.cardId}" class="taiji_acl btn  btn-white btn-small" >现金退款</a>
+		</c:if>
+		<c:if test="${(vo.refundType eq  'GLYQR'||vo.refundType eq  'TFYDC')&&reverFlag}">
+			<a  href="javaScript:void(0);" id="revereRefund"  refundCardId ="${vo.cardId}" class="taiji_acl btn  btn-white btn-small" >冲正</a>
+		</c:if>
+		<c:if test="${reverFlag}">
+			<a  href="${rootUrl }app/customerservice/finance/cardrefundconfirm/operateRecode/${vo.cardId }"class="taiji_modal_lg taiji_acl btn  btn-white btn-small" >日志查询</a>
+		</c:if>
+		<c:if test="${vo.refundType eq  'YWCTF'&&reverFlag&&vo.twoAudit!=1}">
+			 <a  href="javaScript:void(0);" id="againCheck"  refundCardId ="${vo.cardId}" class="taiji_acl btn  btn-white btn-small" >二次核定</a> 
+		</c:if>
+	</td>
+</tr>

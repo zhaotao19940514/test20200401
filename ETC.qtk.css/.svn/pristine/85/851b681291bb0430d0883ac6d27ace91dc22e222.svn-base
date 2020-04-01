@@ -1,0 +1,172 @@
+
+package cn.com.taiji.css.manager.customerservice.report;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.google.common.collect.Lists;
+
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.css.manager.abstractmanager.AbstractDsiCommManager;
+import cn.com.taiji.css.model.customerservice.report.RegionStatisticsModel;
+import cn.com.taiji.qtk.repo.jpa.AccountTradeDetailRepo;
+import cn.com.taiji.qtk.repo.jpa.ChargeDetailRepo;
+import cn.com.taiji.qtk.repo.jpa.FundSerialDetailRepo;
+import cn.com.taiji.qtk.repo.jpa.PaymentBackDetailRepo;
+import cn.com.taiji.qtk.repo.jpa.RegionRepo;
+import cn.com.taiji.qtk.repo.jpa.ServiceHallRepo;
+
+
+@Service
+public class RegionStatisticsManagerImpl extends AbstractDsiCommManager implements RegionStatisticsManager{
+
+	@Autowired
+	private RegionRepo regionRepo;
+	@Autowired
+	private ChargeDetailRepo chargeDetailRepo;
+	@Autowired
+	private AccountTradeDetailRepo accountRepo;
+	@Autowired
+	private PaymentBackDetailRepo PaymentRepo;
+	@Autowired
+	private FundSerialDetailRepo fundRepo;
+	@Autowired
+	private ServiceHallRepo serviceHallRepo;
+	
+	
+	@Override
+	public List<RegionStatisticsModel> queryPage(RegionStatisticsModel queryModel, HttpServletRequest request) throws ManagerException {
+		
+		List<RegionStatisticsModel> modelList = Lists.newArrayList();
+		String beforeDate = queryModel.getStartDate();
+		String afterDate = queryModel.getEndDate();
+		List<Object[]> allRegionName = regionRepo.getAllRegionName();
+		
+		//List<Object[]> allRegionName = serviceHallRepo.getChannelNameByName("贵阳中心");
+		//现金圈存
+		List<Object[]> listChargeByRegion = chargeDetailRepo.listByRegion(beforeDate,afterDate);
+		//List<Object[]> listChargeByRegion =chargeDetailRepo.listByChannel(beforeDate, afterDate, "贵阳中心");
+		//半条
+		List<Object[]> listBtChargeByRegion = chargeDetailRepo.listBtByRegion(beforeDate,afterDate);
+		
+		//账户充值
+		List<Object[]> listAccountByRegion = accountRepo.listByRegionName(beforeDate,afterDate);
+		
+		//List<Object[]> listAccountByRegion = accountRepo.listByChannelName(beforeDate, afterDate, "贵阳中心");
+		
+		//账户冲正
+		List<Object[]> listCorrectByRegion = accountRepo.listCorrectByRegionName(beforeDate,afterDate);
+		
+		//List<Object[]> listCorrectByRegion = accountRepo.listCorrectByChannelName(beforeDate, afterDate, "贵阳中心");
+				
+		//储值卡退款
+		List<Object[]> listFunByRegion = fundRepo.listByRegionName(beforeDate, afterDate);
+		
+		//List<Object[]> listFunByRegion = fundRepo.listByChannelName(beforeDate, afterDate, "贵阳中心");
+		//补缴
+		List<Object[]> listPayByRegion = PaymentRepo.listByRegionName(beforeDate, afterDate);
+		
+		//List<Object[]> listPayByRegion = PaymentRepo.listByRegionName(beforeDate, afterDate, "贵阳中心");
+		//
+		serviceHandle(modelList, beforeDate, afterDate, allRegionName,listBtChargeByRegion, listChargeByRegion, listAccountByRegion,
+				listCorrectByRegion, listFunByRegion, listPayByRegion);
+		
+		return modelList;
+	}
+	private void serviceHandle(List<RegionStatisticsModel> modelList, String beforeDate, String afterDate,
+			List<Object[]> allRegionName,List<Object[]> listBtChargeByRegion, List<Object[]> listChargeByRegion, List<Object[]> listAccountByRegion,
+			List<Object[]> listCorrectByRegion, List<Object[]> listFunByRegion, List<Object[]> listPayByRegion) {
+		Map<String,Long> mapCharge = new HashMap<String,Long>();
+		Map<String,Long> mapBtCharge = new HashMap<String,Long>();
+		Map<String,Long> mapAccount = new HashMap<String,Long>();
+		Map<String,Double> mapFun = new HashMap<String,Double>();
+		Map<String,Double> mapPay = new HashMap<String,Double>();
+		Map<String,Long> mapCorrect = new HashMap<String,Long>();
+		for(Object[] obj:listChargeByRegion) {
+			mapCharge.put(obj[0].toString(), Long.valueOf(obj[1].toString()));
+		}
+		for(Object[] obj:listBtChargeByRegion) {
+			mapBtCharge.put(obj[0].toString(), Long.valueOf(obj[1].toString()));
+		}
+		for(Object[] obj:listAccountByRegion) {
+			mapAccount.put(obj[0].toString(), Long.valueOf(obj[1].toString()));
+		}
+		for(Object[] obj:listFunByRegion) {
+			mapFun.put(obj[0].toString(), Double.valueOf(obj[1].toString()));
+		}
+		for(Object[] obj:listPayByRegion) {
+			mapPay.put(obj[0].toString(), Double.valueOf(obj[1].toString()));
+		}
+		for(Object[] obj:listCorrectByRegion) {
+			mapCorrect.put(obj[0].toString(), Long.valueOf(obj[1].toString()));
+		}
+		
+		String regionName = null;
+		for(Object obj:allRegionName) {
+			regionName = String.valueOf(obj);
+			RegionStatisticsModel model = new RegionStatisticsModel();
+			model.setStartDate(beforeDate);
+			model.setEndDate(afterDate);
+			model.setRegionName(regionName);
+			if(null!=mapCharge.get(regionName)) {
+				model.setAmount(mapCharge.get(regionName));
+			}else {
+				model.setAmount(0L);
+			}
+			if(null!=mapBtCharge.get(regionName)) {
+				model.setBtAount(mapBtCharge.get(regionName));
+			}else {
+				model.setBtAount(0L);
+			}
+			if(null!=mapCorrect.get(regionName)) {
+				model.setCorrectAmount(mapCorrect.get(regionName));
+			}else {
+				model.setCorrectAmount(0L);
+			}
+			
+			if(null!=mapAccount.get(regionName)) {
+				model.setAccountAmount(mapAccount.get(regionName));
+			}else {
+				model.setAccountAmount(0L);
+			}
+			if(null!=mapFun.get(regionName)) {
+				model.setRefund(mapFun.get(regionName));
+			}else {
+				model.setRefund(0.0);
+			}
+			if(null!=mapPay.get(regionName)) {
+				model.setPayAmount(mapPay.get(regionName));
+			}else {
+				model.setPayAmount(0.0);
+			}
+			model.setSum(model.getAmount()+model.getAccountAmount()+model.getPayAmount()-model.getRefund()-model.getCorrectAmount()+model.getBtAount());
+			modelList.add(model);
+		}
+	}
+	@Override
+	public List<RegionStatisticsModel> queryChannelData(String reginNameAndDate) {
+		Object[] obj = reginNameAndDate.split("_");
+		String regionName = obj[0].toString();
+		String beforeDate = obj[1].toString();
+		String afterDate = obj[2].toString();
+		List<RegionStatisticsModel> modelList = Lists.newArrayList();
+		List<Object[]> allRegionName = serviceHallRepo.getChannelNameByName(regionName);
+		List<Object[]> listChargeByRegion =chargeDetailRepo.listByChannel(beforeDate, afterDate, regionName);
+		List<Object[]> listBtChargeByRegion =chargeDetailRepo.listBtByChannel(beforeDate, afterDate, regionName);
+		List<Object[]> listAccountByRegion = accountRepo.listByChannelName(beforeDate, afterDate, regionName);
+		List<Object[]> listCorrectByRegion = accountRepo.listCorrectByChannelName(beforeDate, afterDate,regionName);
+		List<Object[]> listFunByRegion = fundRepo.listByChannelName(beforeDate, afterDate,regionName);
+		List<Object[]> listPayByRegion = PaymentRepo.listByRegionName(beforeDate, afterDate, regionName);
+		serviceHandle(modelList, beforeDate, afterDate, allRegionName, listBtChargeByRegion,listChargeByRegion, listAccountByRegion,
+				listCorrectByRegion, listFunByRegion, listPayByRegion);
+		return modelList;
+	}
+	
+}
+

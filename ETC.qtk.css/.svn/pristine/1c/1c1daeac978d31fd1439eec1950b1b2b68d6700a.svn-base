@@ -1,0 +1,168 @@
+
+package cn.com.taiji.css.model.customerservice.finance;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.Calendar;
+import java.util.Date;
+
+import cn.com.taiji.common.pub.dao.HqlBuilder;
+import cn.com.taiji.common.repo.request.jpa.JpaDateTimePageableDataRequest;
+import cn.com.taiji.common.validation.MyViolationException;
+import cn.com.taiji.qtk.entity.ReckonAccountRefundDetail;
+
+
+public class RefundCorrectCheckRequest extends JpaDateTimePageableDataRequest<ReckonAccountRefundDetail> {
+			private String cardId;
+			private String refundCardId;
+			private Long refundBalance;
+			private String beforeDate;
+			private String afterDate;
+			private Long updateBalance;
+			private Integer minumsType;
+			
+			private Long cardBalance;
+			private Long accountCardBalance;
+			private String agencyId;
+
+			public String getCardId() {
+				return cardId;
+			}	
+
+			public void setCardId(String cardId) {
+				this.cardId = cardId;
+			}
+			public String getRefundCardId() {
+				return refundCardId;
+			}
+			public Integer getMinumsType() {
+				return minumsType;
+			}
+
+			public void setMinumsType(Integer minumsType) {
+				this.minumsType = minumsType;
+			}
+
+			public void setRefundCardId(String refundCardId) {
+				this.refundCardId = refundCardId;
+			}
+
+			public Long getRefundBalance() {
+				return refundBalance;
+			}
+
+			public void setRefundBalance(Long refundBalance) {
+				this.refundBalance = refundBalance;
+			}
+			
+			public String getBeforeDate() {
+				return beforeDate;
+			}
+
+			public void setBeforeDate(String beforeDate) {
+				this.beforeDate = beforeDate;
+			}
+
+			public String getAfterDate() {
+				return afterDate;
+			}
+
+			public void setAfterDate(String afterDate) {
+				this.afterDate = afterDate;
+			}
+			
+			public Long getUpdateBalance() {
+				return updateBalance;
+			}
+
+			public void setUpdateBalance(Long updateBalance) {
+				this.updateBalance = updateBalance;
+			}
+			
+
+			public String getAgencyId() {
+				return agencyId;
+			}
+
+			public void setAgencyId(String agencyId) {
+				this.agencyId = agencyId;
+			}
+
+			public Long getCardBalance() {
+				return cardBalance;
+			}
+
+			public void setCardBalance(Long cardBalance) {
+				this.cardBalance = cardBalance;
+			}
+
+			public Long getAccountCardBalance() {
+				return accountCardBalance;
+			}
+
+			public void setAccountCardBalance(Long accountCardBalance) {
+				this.accountCardBalance = accountCardBalance;
+			}
+			
+
+			public void validate() {
+				MyViolationException mve = new MyViolationException();	
+				
+				if(null!=afterDate&&null==beforeDate) {
+					mve.addViolation("beforeDate", "当前日期不能为空");
+				}
+				if(null==afterDate&&null!=beforeDate) {
+					mve.addViolation("afterDate", "当前日期不能为空");
+				}
+				if(null!=afterDate) {
+					if(!cancel30ArgueTime(afterDate)) {
+						mve.addViolation("afterDate", "当前选择日期未过争议期");
+					}
+				}
+				
+				if (mve.hasViolation()) throw mve;
+			}
+			
+			@Override
+			public HqlBuilder toSelectHql() {
+				
+				 //agencyId = "52010106004";
+				HqlBuilder hql = new HqlBuilder("from " + "ReckonAccountRefundDetail" +
+						"  where 1=1 ");
+				hql.append(" and cardId=:cardId", cardId);
+				hql.append(" and minumsType=:minumsType", minumsType);
+				if(null!=afterDate) {
+					//Calendar beforDate = getCalenderDate(beforeDate+" 01:00:00");
+					//Calendar afteDate = getCalenderDate(afterDate+" 23:59:00");
+					hql.append(" and cancelTime between :beforDate",beforeDate+" 01:00:00");
+					hql.append(" and :afteDate",afterDate+" 23:59:00");
+				}
+				hql.append(" order by createTime desc");
+				return hql;
+			}
+			public boolean cancel30ArgueTime(String cardId) {
+				DateTimeFormatter dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+				LocalDate nowDate = LocalDate.now();
+				LocalDate cancelDate = LocalDate.parse(afterDate, dateTimeFormatter).plusDays(31);
+				System.out.println(cancelDate);
+				// = LocalDate.parse(format.format(afterDate)).plusDays(30); 
+				return nowDate.compareTo(cancelDate) > 0;
+			}
+			private Calendar getCalenderDate(String date) {
+				SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+				try {
+					Date beforeDate = sdf.parse(date);
+					Calendar calendar = Calendar.getInstance();
+					calendar.setTime(beforeDate);
+					return calendar;
+				} catch (ParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return null;
+			}
+
+}
+

@@ -1,0 +1,175 @@
+package cn.com.taiji.css.manager.administration.section4x.obu;
+
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.google.common.collect.Lists;
+
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.common.model.dao.LargePagination;
+import cn.com.taiji.common.validation.MyViolationException;
+import cn.com.taiji.css.model.administration.section4x.Obu4XSectionModel;
+import cn.com.taiji.css.model.administration.section4x.Obu4XSectionRequest;
+import cn.com.taiji.css.model.util.PeriodModel;
+import cn.com.taiji.qtk.entity.Obu4XSection;
+import cn.com.taiji.qtk.entity.dict.DeviceVersion;
+import cn.com.taiji.qtk.repo.jpa.Obu4XSectionRepo;
+
+@Service
+public class Obu4XSectionManageImpl implements Obu4XSectionManage {
+
+	@Autowired
+	private Obu4XSectionRepo obu4XSectionRepo;
+
+	@Override
+	@Transactional
+	public void add(Obu4XSectionRequest request) throws ManagerException {
+		// 参数校验
+		request.paramCheck();
+		Long startIdCheck = Long.valueOf(request.getStartId().substring(4));
+		Long endIdCheck = Long.valueOf(request.getEndId().substring(4));
+		if (endIdCheck < startIdCheck) {
+			throw new ManagerException("终止号段不允许不起始号段小，请检查后再试");
+		}
+		List<Obu4XSection> allExsitEntity = obu4XSectionRepo.findAll();
+		List<PeriodModel> union = Lists.newArrayList();
+		for (Obu4XSection entity : allExsitEntity) {
+			Long startId = Long.valueOf(entity.getStartId());
+			Long endId = Long.valueOf(entity.getEndId());
+			PeriodModel mergeEntity = new PeriodModel(startId, endId);
+			union.add(mergeEntity);
+		}
+		PeriodModel saveEntity = new PeriodModel(Long.valueOf(request.getStartId()), Long.valueOf(request.getEndId()));
+		union.add(saveEntity);
+		saveAndDelete(union, allExsitEntity);
+	}
+
+	@Override
+	public LargePagination<Obu4XSectionModel> findAll(Obu4XSectionRequest request) throws ManagerException {
+		MyViolationException mve = new MyViolationException();
+		if (request.getObuId() != null) {
+			if (!request.getObuId().startsWith("5") || !request.getObuId().matches("[0-9]+")
+					|| request.getObuId().length() != 16) {
+				mve.addViolation("obuId", "OBU号输入错误");
+			}
+		}
+		if (mve.hasViolation()) {
+			throw mve;
+		}
+		LargePagination<Obu4XSectionModel> pagn = new LargePagination<Obu4XSectionModel>();
+		List<Obu4XSectionModel> modelList = new ArrayList<Obu4XSectionModel>();
+		if (request.getObuId() != null) {
+			List<Obu4XSection> queryResult = obu4XSectionRepo.findByObuId(request.getObuId());
+			for (Obu4XSection obu4XSection : queryResult) {
+				Obu4XSectionModel model = new Obu4XSectionModel();
+				model.setId(obu4XSection.getId());
+				model.setDate(obu4XSection.getCreateTime().toString());
+				model.setStartId(obu4XSection.getStartId());
+				model.setEndId(obu4XSection.getEndId());
+				model.setVersion(obu4XSection.getVersion().toString());
+				model.setAmount(
+						Long.valueOf(obu4XSection.getEndId()) - Long.valueOf(obu4XSection.getStartId()) + 1 + "");
+				modelList.add(model);
+			}
+			pagn.setCurrentPage(1);
+			pagn.setHasMore(false);
+			pagn.setPageSize(1);
+			pagn.setResult(modelList);
+			return pagn;
+		}
+		LargePagination<Obu4XSection> queryResult = obu4XSectionRepo.largePage(request);
+		List<Obu4XSection> queryResultList = queryResult.getResult();
+		for (Obu4XSection obu4XSection : queryResultList) {
+			Obu4XSectionModel model = new Obu4XSectionModel();
+			model.setId(obu4XSection.getId());
+			model.setDate(obu4XSection.getCreateTime().toString());
+			model.setStartId(obu4XSection.getStartId());
+			model.setEndId(obu4XSection.getEndId());
+			model.setVersion(obu4XSection.getVersion().toString());
+			model.setAmount(Long.valueOf(obu4XSection.getEndId()) - Long.valueOf(obu4XSection.getStartId()) + 1 + "");
+			modelList.add(model);
+		}
+		pagn.setCurrentPage(queryResult.getCurrentPage());
+		pagn.setHasMore(queryResult.isHasMore());
+		pagn.setPageSize(pagn.getPageSize());
+		pagn.setResult(modelList);
+		return pagn;
+	}
+
+	@Override
+	@Transactional
+	public void delete(String id) throws ManagerException {
+		Obu4XSection queryResult = obu4XSectionRepo.findById(id).get();
+		if (queryResult == null) {
+			throw new ManagerException("该OBU号段不存在");
+		}
+		obu4XSectionRepo.delete(queryResult);
+	}
+
+	private void saveAndDelete(List<PeriodModel> beforeMerge, List<Obu4XSection> allModel) throws ManagerException {
+		List<PeriodModel> afterMerge = Lists.newArrayList();
+		try {
+			afterMerge = PeriodModel.doMergeSortList(beforeMerge);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new ManagerException(e.getMessage());
+		}
+		List<Obu4XSection> saveList = new ArrayList<Obu4XSection>();
+		for (PeriodModel afterMergeModel : afterMerge) {
+			Obu4XSection saveEntity = new Obu4XSection();
+			saveEntity.setStartId(afterMergeModel.getStartId() + "");
+			saveEntity.setEndId(afterMergeModel.getEndId() + "");
+			saveEntity.setVersion(DeviceVersion.OBU_4X);
+			saveEntity.setCreateTime(LocalDateTime.now());
+			saveList.add(saveEntity);
+		}
+		obu4XSectionRepo.persistAll(saveList);
+		obu4XSectionRepo.deleteAll(allModel);
+	}
+
+	@Override
+	public void batchAdd(Obu4XSectionRequest request) throws ManagerException {
+		if (request.getBatchInfo().size() == 0) {
+		}
+		;
+		if (request.getVersion() == null) {
+			throw new ManagerException("请填写卡版本");
+		}
+		;
+		List<PeriodModel> union = Lists.newArrayList();
+		for (String section : request.getBatchInfo()) {
+			if (section == null) {
+				throw new ManagerException("有多余‘,’导致数据校验失败，请检查后重试，请参考示例" + "非法号段为：" + section);
+			}
+			String[] splitResult = section.split("-");
+			if (splitResult.length != 2) {
+				throw new ManagerException("不支持除 - 外的分割符，请参考示例" + "非法号段为：" + section);
+			}
+			if (splitResult[0] == null || !splitResult[0].startsWith("5") || !splitResult[0].matches("[0-9]+")
+					|| splitResult[0].length() != 16) {
+				throw new ManagerException("批量起始号段填写错误" + splitResult[0]);
+			}
+			if (splitResult[1] == null || !splitResult[1].startsWith("5") || !splitResult[1].matches("[0-9]+")
+					|| splitResult[1].length() != 16) {
+				throw new ManagerException("批量终止号段填写错误" + splitResult[1]);
+			}
+			Long startId = Long.valueOf(splitResult[0].toString().substring(4));
+			Long endId = Long.valueOf(splitResult[1].toString().substring(4));
+			if (endId < startId) {
+				throw new ManagerException("终止号段不允许不起始号段小，请检查后再试" + "非法号段为：" + section);
+			}
+			union.add(new PeriodModel(Long.valueOf(splitResult[0]), Long.valueOf(splitResult[1])));
+		}
+		List<Obu4XSection> allExsitEntity = obu4XSectionRepo.findAll();
+		for (Obu4XSection obu4XSectionEntity : allExsitEntity) {
+			union.add(new PeriodModel(Long.valueOf(obu4XSectionEntity.getStartId()),
+					Long.valueOf(obu4XSectionEntity.getEndId())));
+		}
+		saveAndDelete(union, allExsitEntity);
+	}
+}

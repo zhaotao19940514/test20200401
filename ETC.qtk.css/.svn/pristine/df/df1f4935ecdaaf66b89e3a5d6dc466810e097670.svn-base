@@ -1,0 +1,113 @@
+/*
+ * Date: 2013-5-28
+ * author: Peream  (peream@gmail.com)
+ *
+ */
+package cn.com.taiji.css.model;
+
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.scheduling.support.CronTrigger;
+
+import cn.com.taiji.common.pub.StringTools;
+import cn.com.taiji.common.validation.MyViolationException;
+import cn.com.taiji.css.entity.dict.SysConfType;
+
+/**
+ * 
+ * @author Peream <br>
+ *         Create Time：2013-5-28 下午7:31:52<br>
+ *         <a href="mailto:peream@gmail.com">peream@gmail.com</a>
+ * @since 1.0
+ * @version 1.0
+ */
+public class CronPara extends AbstractSysConf
+{
+	private String sample = "1 1/10 * * * ?";
+	private String sysInfo = "16 2/5 * * * ?";
+	private String ssoTicket = "24 1/6 * * * ?";
+	//批量发行订单生成
+	private String batchIssueOrder = "0 0/5 * * * ?";
+
+	public CronPara()
+	{
+		super(SysConfType.CRON_PARA);
+	}
+
+	public String getSample()
+	{
+		return sample;
+	}
+
+	public String getSysInfo()
+	{
+		return sysInfo;
+	}
+	
+	public String getBatchIssueOrder() {
+		return batchIssueOrder;
+	}
+
+	public void setBatchIssueOrder(String batchIssueOrder) {
+		this.batchIssueOrder = batchIssueOrder;
+	}
+
+	public void setSample(String sample)
+	{
+		this.sample = sample;
+	}
+
+	public void setSysInfo(String sysInfo)
+	{
+		this.sysInfo = sysInfo;
+	}
+
+	public String getSsoTicket()
+	{
+		return ssoTicket;
+	}
+
+	public void setSsoTicket(String ssoTicket)
+	{
+		this.ssoTicket = ssoTicket;
+	}
+
+	public boolean isCron(String cron)
+	{
+		if (!StringTools.hasText(cron)) return false;
+		try
+		{
+			new CronTrigger(cron);
+			return true;
+		}
+		catch (Exception e)
+		{
+			return false;
+		}
+	}
+
+	public void valid()
+	{
+		String error = "cron表达式错误";
+		MyViolationException mve = new MyViolationException();
+		PropertyDescriptor[] pds = BeanUtils.getPropertyDescriptors(getClass());
+		try
+		{
+			for (PropertyDescriptor pd : pds)
+			{
+				Class<?> clazz = pd.getPropertyType();
+				if (!clazz.equals(String.class)) continue;
+				Method method = pd.getReadMethod();
+				String rs = (String) method.invoke(this);
+				if (!isCron(rs)) mve.addViolation(pd.getName(), error);
+			}
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException("反射获取属性值失败", e);
+		}
+		if (mve.hasViolation()) throw mve;
+	}
+}

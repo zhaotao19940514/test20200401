@@ -1,0 +1,190 @@
+/**
+ * @Title RechargeRequest.java
+ * @Package cn.com.taiji.css.model.customerservice.finance
+ * @Description TODO
+ * @author yaonanlin
+ * @date 2018年6月25日 下午5:18:48
+ * @version V1.0
+ */
+package cn.com.taiji.css.model.customerservice.card;
+
+import java.io.File;
+
+import cn.com.taiji.common.pub.dao.HqlBuilder;
+import cn.com.taiji.common.repo.request.jpa.JpaDateTimePageableDataRequest;
+import cn.com.taiji.common.validation.MyViolationException;
+import cn.com.taiji.qtk.entity.CardInfo;
+import cn.com.taiji.qtk.entity.dict.BankType;
+
+/**
+ * @ClassName RechargeRequest
+ * @Description TODO
+ * @author yaonl
+ * @date 2018年06月25日 17:18:48
+ * @E_mail yaonanlin@163.com
+ */
+public class CancelRequest extends JpaDateTimePageableDataRequest<CardInfo> {
+	private String vehicleId;
+	private String cardId;
+	private Long refuse;
+	private String bankCardId;
+	private String balanceType;
+	//是否强制注销: 0否  1是
+	private Integer type;
+	//false:supply true:cancel
+	private boolean supplyOrCancel;
+	private String agencyId;
+	private String vehicleColor;
+	private Long cardBalance;
+	private Integer cardType;
+	private Integer provider;
+	private boolean jhFlag;
+	private Integer bankType;
+	private Integer cusType;
+	private String bankAddres;
+	private String cusName;
+	private String cusTel;
+	private String attach;
+	
+	public String getVehicleId() {
+		return vehicleId;
+	}
+	public void setVehicleId(String vehicleId) {
+		this.vehicleId = vehicleId;
+	}
+	
+	public String getVehicleColor() {
+		return vehicleColor;
+	}
+	public void setVehicleColor(String vehicleColor) {
+		this.vehicleColor = vehicleColor;
+	}
+	public String getCardId() {
+		return cardId;
+	}
+	public void setCardId(String cardId) {
+		this.cardId = cardId;
+	}
+	
+	public Long getRefuse() {
+		return refuse;
+	}
+	public void setRefuse(Long refuse) {
+		this.refuse = refuse;
+	}
+	
+	
+	public Integer getProvider() {
+		return provider;
+	}
+	public void setProvider(Integer provider) {
+		this.provider = provider;
+	}
+	public Integer getCardType() {
+		return cardType;
+	}
+	public void setCardType(Integer cardType) {
+		this.cardType = cardType;
+	}
+	public Long getCardBalance() {
+		return cardBalance;
+	}
+	public void setCardBalance(Long cardBalance) {
+		this.cardBalance = cardBalance;
+	}
+	public String getAgencyId() {
+		return agencyId;
+	}
+	public void setAgencyId(String agencyId) {
+		this.agencyId = agencyId;
+	}
+	public Integer getType() {
+		return type;
+	}
+	public void setType(Integer type) {
+		this.type = type;
+	}
+	public String getBalanceType() {
+		return balanceType;
+	}
+	public void setBalanceType(String balanceType) {
+		this.balanceType = balanceType;
+	}
+	public String getBankCardId() {
+		return bankCardId;
+	}
+	public void setBankCardId(String bankCardId) {
+		this.bankCardId = bankCardId;
+	}
+	public boolean isSupplyOrCancel() {
+		return supplyOrCancel;
+	}
+	public void setSupplyOrCancel(boolean supplyOrCancel) {
+		this.supplyOrCancel = supplyOrCancel;
+	}
+	
+	public boolean isJhFlag() {
+		return jhFlag;
+	}
+	public void setJhFlag(boolean jhFlag) {
+		this.jhFlag = jhFlag;
+	}
+	
+	public Integer getBankType() {
+		return bankType;
+	}
+	public void setBankType(Integer bankType) {
+		this.bankType = bankType;
+	}
+	public Integer getCusType() {
+		return cusType;
+	}
+	public void setCusType(Integer cusType) {
+		this.cusType = cusType;
+	}
+	public String getBankAddres() {
+		return bankAddres;
+	}
+	public void setBankAddres(String bankAddres) {
+		this.bankAddres = bankAddres;
+	}
+	public String getCusName() {
+		return cusName;
+	}
+	public void setCusName(String cusName) {
+		this.cusName = cusName;
+	}
+	public String getCusTel() {
+		return cusTel;
+	}
+	public void setCusTel(String cusTel) {
+		this.cusTel = cusTel;
+	}
+	public String getAttach() {
+		return attach;
+	}
+	public void setAttach(String attach) {
+		this.attach = attach;
+	}
+	public void validate() {
+		MyViolationException mve = new MyViolationException();		
+		if(cardId == null&&null==vehicleId&&null==vehicleColor) mve.addViolation("cardId", "请填写卡号");
+		if(cardId!= null&&null!=vehicleId&&null==vehicleColor) mve.addViolation("vehicleColor", "请选择车牌颜色");
+		if(cardId== null&&null!=vehicleId&&null==vehicleColor) mve.addViolation("vehicleColor", "请选择车牌颜色");
+		if(cardId!= null&&null==vehicleId&&null!=vehicleColor) mve.addViolation("vehicleId", "请填写车牌号");
+		if(cardId == null&&null==vehicleId&&null!=vehicleColor) mve.addViolation("vehicleId", "请填写车牌号");
+		if (mve.hasViolation()) throw mve;
+		if(null!=vehicleId&&null!=vehicleColor) {
+			vehicleId=vehicleId+"_"+vehicleColor;
+		}
+	}
+	@Override
+	public HqlBuilder toSelectHql() {
+		HqlBuilder hql = new HqlBuilder("from " + "CardInfo " +
+				"  where 1=1 ");
+		hql.append(" and vehicleId=:vehicleId",vehicleId);
+		hql.append(" and cardId=:cardId", cardId);
+				return hql;
+	}
+}
+

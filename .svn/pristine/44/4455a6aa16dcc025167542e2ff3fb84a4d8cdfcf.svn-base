@@ -1,0 +1,35 @@
+
+dorisChargeDetailForceFixUri   = http://58.42.241.179:9096/doris/recharge/forceFix
+dorisChargeDetailConfirmUri =   http://58.42.241.179:9096/doris/recharge/forceComfirm
+validationServiceURL=http://127.0.0.1:8081/dsi/app/common/validation
+releaseServiceURL=http://127.0.0.1:8081/dsi/app/common/releases
+inqueryServiceURL=http://127.0.0.1:8081/dsi/app/common/inquire
+maintenanceServiceURL=http://127.0.0.1:8081/dsi/app/common/maintenance
+reckonServiceURL=http://127.0.0.1:8081/dsi/app/common/reckon
+financeServiceURL=http://127.0.0.1:8081/dsi/app/common/finance
+storageServiceURL=http://127.0.0.1:8081/dsi/app/common/storage
+finchargeServiceURL=http://127.0.0.1:8081/dsi/app//common/fincharge
+
+#dorisChargeDetailForceFixUri   = http://58.42.241.179:9096/doris/recharge/forceFix
+#dorisChargeDetailConfirmUri =   http://58.42.241.179:9096/doris/recharge/forceComfirm
+#validationServiceURL=http://10.52.0.146/dsi/app/common/validation
+#releaseServiceURL=http://10.52.0.146/dsi/app/common/releases
+#inqueryServiceURL=http://10.52.0.146/dsi/app/common/inquire
+#maintenanceServiceURL=http://10.52.0.146/dsi/app/common/maintenance
+#reckonServiceURL=http://10.52.0.146/dsi/app/common/reckon
+#financeServiceURL=http://10.52.0.146/dsi/app/common/finance
+#storageServiceURL=http://10.52.0.146/dsi/app/common/storage
+
+
+
+#sso properties
+enableSso=false
+enableLocalLogin=true
+
+# MISPOS CONFIG
+platId = 66666
+operId = 99999
+
+# card authentication terminalId
+terminalId = 020000000000
+

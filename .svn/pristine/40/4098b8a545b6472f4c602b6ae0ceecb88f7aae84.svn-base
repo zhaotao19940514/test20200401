@@ -1,0 +1,561 @@
+package cn.com.taiji.css.manager.customerservice.card;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.common.manager.net.http.binclient.ApiRequestException;
+import cn.com.taiji.common.manager.pub.FileHelper;
+import cn.com.taiji.common.model.dao.LargePagination;
+import cn.com.taiji.common.pub.StringTools;
+import cn.com.taiji.css.entity.User;
+import cn.com.taiji.css.manager.abstractmanager.AbstractDsiCommManager;
+import cn.com.taiji.css.manager.administration.agency.AgencyVarifyManager;
+import cn.com.taiji.css.model.MyFinals;
+import cn.com.taiji.css.model.customerservice.card.CancelRequest;
+import cn.com.taiji.css.model.customerservice.card.PreCancelRequest;
+import cn.com.taiji.dsi.manager.comm.client.FinanceBinService;
+import cn.com.taiji.dsi.manager.comm.client.InqueryBinService;
+import cn.com.taiji.dsi.model.comm.protocol.CommQtkRequset;
+import cn.com.taiji.dsi.model.comm.protocol.finance.CardCancelConfirmRequest;
+import cn.com.taiji.dsi.model.comm.protocol.finance.CardCancelOrderConfirmResponse;
+import cn.com.taiji.dsi.model.comm.protocol.finance.CardCancelResponse;
+import cn.com.taiji.dsi.model.comm.protocol.finance.CardCancelWithCOSRequest;
+import cn.com.taiji.dsi.model.comm.protocol.finance.CardCancelWithCOSResponse;
+import cn.com.taiji.dsi.model.comm.protocol.finance.CardCancelWithCOSV2Request;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.CardInfoQueryRequest;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.CardInfoQueryResponse;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.CardOrderConfirmRequest;
+import cn.com.taiji.qtk.entity.AccountCardBalanceOperate;
+import cn.com.taiji.qtk.entity.BlackCard;
+import cn.com.taiji.qtk.entity.CancelledCardDetail;
+import cn.com.taiji.qtk.entity.CardInfo;
+import cn.com.taiji.qtk.entity.CustomerInfo;
+import cn.com.taiji.qtk.entity.PerCancel;
+import cn.com.taiji.qtk.repo.jpa.AccountCardBalanceOperateRepo;
+import cn.com.taiji.qtk.repo.jpa.BlackCardRepo;
+import cn.com.taiji.qtk.repo.jpa.CancelledCardDetailRepo;
+import cn.com.taiji.qtk.repo.jpa.CardInfoRepo;
+import cn.com.taiji.qtk.repo.jpa.CustomerInfoRepo;
+import cn.com.taiji.qtk.repo.jpa.PerCancelRepo;
+
+/**
+ * @ClassName CancelManagerImpl.java
+ * @author zhaotao
+ * @Description O
+ * @date2018年11月28日
+ */
+@Service
+public class CancelManagerImpl extends AbstractDsiCommManager implements CancelManager {
+
+	@Autowired
+	private CardInfoRepo cardInfoRepo;
+	@Autowired
+	private InqueryBinService inqueryBinService;
+	@Autowired
+	private FinanceBinService financeBinService;
+	@Autowired
+	private CancelledCardDetailRepo cancelDetailRepo;
+	@Autowired
+	private AccountCardBalanceOperateRepo accountCardBalanceOperateRepo;
+	@Autowired
+	private AgencyVarifyManager agencyVarifyManager;
+	@Autowired
+	private BlackCardRepo blackCardRepo;
+	@Autowired
+	private PerCancelRepo perCancelRepo;
+	@Autowired
+	private CustomerInfoRepo customerInfoRepo;
+
+	@Override
+	public LargePagination<CardInfo> queryPage(CancelRequest queryModel, User user) throws ManagerException {
+		queryModel.validate();
+		List<CardInfo> listCard = new ArrayList<CardInfo>();
+		listCard = agencyCheck(queryModel,user);
+		LargePagination<CardInfo> list = new LargePagination<CardInfo>();
+		if(listCard.size()==0) {
+			list=null;
+		}else {
+			list.setResult(listCard);
+		}
+		return list;
+		
+		//return cardInfoRepo.largePage(queryModel);
+	}
+
+	/*private boolean querycheck(CancelRequest queryModel, User user) throws ManagerException {
+
+		String agencyId = user.getStaff().getServiceHall().getAgencyId();
+		CardInfo cardInfo = null;
+		List<CardInfo> cardList = agencyCheck(queryModel,user);
+		if(cardList.size()!=0) {
+			cardInfo = agencyCheck(queryModel,user).get(0);
+		}
+		if (null != cardInfo) {
+			if (!agencyId.equals(cardInfo.getAgencyId())) {
+				// 建行要求52010102002
+				if ("52010102018".equals(agencyId) && "52010102002".equals(cardInfo.getAgencyId())) {
+					return true;
+				} else if ("52010102002".equals(agencyId) && "52010102018".equals(cardInfo.getAgencyId())) {
+					return true;
+				} else {
+					throw new ManagerException("该卡不能在该渠道进行办理");
+				}
+			} else {
+				
+				return true;
+			}
+		}
+		return false;
+	}*/
+
+	private List<CardInfo> agencyCheck(CancelRequest queryModel, User user) throws ManagerException {
+		List<CardInfo> listCard = new ArrayList<CardInfo>();
+		CardInfo cardInfo = null;
+		if (StringTools.hasText(queryModel.getCardId())) {
+			cardInfo = cardInfoRepo.findByCardId(queryModel.getCardId());
+			
+			boolean falg =true;;
+			try {
+				falg = true;//agencyVarifyManager.varifyAgency(user, cardInfo);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new ManagerException("渠道校验失败："+e.getMessage());
+			}
+			if(falg) {
+				if(null!=cardInfo) {
+					listCard.add(cardInfo);
+				}
+			}else {
+				throw new ManagerException("当前渠道无权操作此卡");
+			}
+		}else if (StringTools.hasText(queryModel.getVehicleId())) {
+			List<CardInfo> cardList = cardInfoRepo.listByVehicleId(queryModel.getVehicleId());
+			if(cardList.size()>0) {
+				boolean falg =true;
+				for(CardInfo info:cardList) {
+					try {
+						falg = true;// agencyVarifyManager.varifyAgency(user, info);
+					} catch (Exception e) {
+						e.printStackTrace();
+						throw new ManagerException("渠道校验失败："+e.getMessage());
+					}
+					if(falg) {
+						listCard.add(info);
+					}
+				}
+				if(listCard.size()==0) {
+					throw new ManagerException("当前渠道无权操作此卡");
+				}
+			}
+			
+		}
+		return listCard;
+
+	}
+
+	@Override
+	public AppCardStatusChangeResponse doPreCancel(@Valid PreCancelRequest queryModel, User user) throws ManagerException {
+		CardCancelWithCOSResponse cardCOSRes = new CardCancelWithCOSResponse();
+		AppCardStatusChangeResponse response = new AppCardStatusChangeResponse();
+		CardCancelOrderConfirmResponse cardBindRes = new CardCancelOrderConfirmResponse();
+		/*
+		 * AccountCardBalanceOperate accountCardBalanceOperate =
+		 * accountCardBalanceOperateRepo .findByCardId(queryModel.getCardId());
+		 */
+		List<BlackCard> blackCardType_4 = blackCardRepo.listCardBlack(queryModel.getCardId(),4);
+		List<BlackCard> blackCardType_6 = blackCardRepo.listCardBlack(queryModel.getCardId(),6);
+		if(null!=blackCardType_4&&blackCardType_4.size()!=0) {
+			response.setStatus(999);
+			response.setMessage("该卡已下发黑名单,黑名单类型为【账户透支】。不能注销");
+			return response;
+		}else if(null!=blackCardType_6&&blackCardType_6.size()!=0) {
+			response.setStatus(999);
+			response.setMessage("该卡已下发黑名单,黑名单类型为【车型不符】。不能注销");
+			return response;
+		}
+		// 卡注销申请接口
+		if (queryModel.getApplyStep() == 1) {
+			deleteCancelDetail(queryModel.getCardId());
+			if(queryModel.getCardType()==1) {
+				if(checkCancelReleasePlate(user.getStaff().getServiceHall().getAgencyId())) {
+					cardCOSRes= cardPrecancelReleasePlate(queryModel, user);
+				}else {
+					cardCOSRes = preCancelWithCOS(queryModel, user);
+				}
+			}else if(!queryModel.isSupplyOrCancel()){
+				toEntityOprt(queryModel, user);
+				cardCOSRes = preCancelWithCOS(queryModel, user);
+			}else {
+				cardCOSRes = preCancelWithCOSV2(queryModel, user);
+			}
+			response.setCommand(cardCOSRes.getCommand());
+			response.setCosRecordId(cardCOSRes.getCosRecordId());
+			response.setStatus(cardCOSRes.getStatus());
+			response.setMessage(cardCOSRes.getMessage());
+			response.setCardId(queryModel.getCardId());
+			/*
+			 * if(null==accountCardBalanceOperate&&queryModel.getProvider()==0&&queryModel.
+			 * getCardType()==2) {
+			 */
+//			if (queryModel.getCardType() == 2) {
+//				addAcountCardBanlance(queryModel,user);
+//			}
+		} else if (queryModel.getApplyStep() != 1 && queryModel.getProvider() == 1) {
+			cardBindRes = doCardOrder(queryModel, user);
+			response.setCommand(cardBindRes.getCommand());
+			response.setOrderStatus(cardBindRes.getOrderStatus());
+			response.setStatus(cardBindRes.getStatus());
+			response.setMessage(cardBindRes.getMessage());
+			response.setCardBalance(cardBindRes.getCardBalance());
+			response.setCardId(queryModel.getCardId());
+			response.setCosRecordId(cardBindRes.getCosRecordId());
+			/*
+			 * if(null==accountCardBalanceOperate&&cardBindRes.getOrderStatus()==2&&
+			 * queryModel.getCardType()==2) { addAcountCardBanlance(queryModel); }
+			 */
+		}
+		/*
+		 * }else { cardCancelWithCOSResponse.setMessage("当前卡状态为预注销或注销，不能办理预注销业务。"); }
+		 */
+		logger.info("卡{}预注销信息{}",queryModel.getCardId(),response);
+		return response;
+	}
+
+	@Override
+	public CardCancelResponse doCancel(@Valid CancelRequest queryModel, User user) throws Exception {
+
+		CardCancelResponse cardCancelResponse = new CardCancelResponse();
+		CardInfoQueryResponse cardInfoQueryResponse = new CardInfoQueryResponse();
+		/*
+		 * if (queryModel.isJhFlag()) { Integer detailCount =
+		 * accountCardDetailRepo.countByCardId(queryModel.getCardId()); if (detailCount
+		 * != 0) { cardCancelResponse.setMessage("该卡有业务流水,无法强制注销.系统将会自动注销."); return
+		 * cardCancelResponse; } }
+		 */
+		/*
+		 * try { if (!jhCancelTime(queryModel) && queryModel.isJhFlag()) {
+		 * cardCancelResponse.setMessage("建行卡预注销后第二天才能执行注销业务"); return
+		 * cardCancelResponse; } } catch (Exception e) {
+		 * cardCancelResponse.setMessage("cancelledcard_detail数据有误导致注销失败，请联系管理员");
+		 * return cardCancelResponse; }
+		 */
+
+		// 渠道校验
+		cardInfoQueryResponse = QueryCardInfo(queryModel.getCardId(), user);
+		if (cardInfoQueryResponse.getStatus() == 1) {
+			int status = cardInfoQueryResponse.getCardStatus();
+			if (status == 9) {
+				if(cardInfoQueryResponse.getCardType()/100==2) {
+					CancelledCardDetail detail = cancelDetailRepo.findByCardId(queryModel.getCardId());
+					if(null==detail) {
+						supplyCancelDetail(queryModel, user);
+					}
+				}
+				if (queryModel.getType() == 1) {
+					updateCancelTime(queryModel.getCardId());
+				}
+				cardCancelResponse = cardCancel(queryModel, user);
+			} else {
+				cardCancelResponse.setMessage("此卡不能办理注销业务,预注销状态才能办理。");
+			}
+		} else {
+			cardCancelResponse.setMessage("未查询到该卡信息,请检查此卡是否已开卡。");
+		}
+		logger.info("卡{}注销信息{}",queryModel.getCardId(),cardCancelResponse);
+		return cardCancelResponse;
+	}
+
+	/*
+	 * private boolean jhCancelTime(CancelRequest queryModel) { CancelledCardDetail
+	 * detail = cancelDetailRepo.findByCardId(queryModel.getCardId()); LocalDate
+	 * nowDate = LocalDate.now(); SimpleDateFormat format = new
+	 * SimpleDateFormat("yyyy-MM-dd"); LocalDate cancelDate =
+	 * LocalDate.parse(format.format(detail.getCreateTime().getTime())).plusDays(1);
+	 * return nowDate.compareTo(cancelDate) >= 0;
+	 * 
+	 * }
+	 */
+
+	public CardCancelOrderConfirmResponse doCardOrder(PreCancelRequest preReq, User user) {
+		CardOrderConfirmRequest cardOrderConfirmReq = new CardOrderConfirmRequest();
+		CardCancelOrderConfirmResponse CardObuConfirmRes = new CardCancelOrderConfirmResponse();
+		super.commSet(cardOrderConfirmReq, user);
+		jhAgency(cardOrderConfirmReq, preReq.getCardId(), user);
+		// 查渠道号
+		cardOrderConfirmReq.setCardId(preReq.getCardId());
+		cardOrderConfirmReq.setResponse(preReq.getCosResponse());
+		cardOrderConfirmReq.setCommand(preReq.getCommand());
+		cardOrderConfirmReq.setCosRecordId(preReq.getCosRecordId());
+		try {
+			CardObuConfirmRes = inqueryBinService.cancelCardOrderConfirm(cardOrderConfirmReq);
+		} catch (ApiRequestException | IOException e) {
+			e.printStackTrace();
+		}
+		return CardObuConfirmRes;
+	}
+
+	private void jhAgency(CommQtkRequset req, String cardId, User user) {
+		CardInfo cardInfo = cardInfoRepo.findByCardId(cardId);
+		String agencyId = user.getStaff().getServiceHall().getAgencyId();
+		if (null != cardInfo) {
+			if ("52010102018".equals(agencyId) && "52010102002".equals(cardInfo.getAgencyId())) {
+				req.setAgentId(cardInfo.getAgencyId());
+			} else if ("52010102002".equals(agencyId) && "52010102018".equals(cardInfo.getAgencyId())) {
+				req.setAgentId(cardInfo.getAgencyId());
+			}
+		}
+	}
+
+	private void toEntityOprt(PreCancelRequest queryModel,User user) {
+		CustomerInfo cusInfo = customerInfoRepo.findByCustomerId(cardInfoRepo.findByCardId(queryModel.getCardId()).getCustomerId());
+		AccountCardBalanceOperate accCardOpre = new AccountCardBalanceOperate();
+		accCardOpre.setCardId(queryModel.getCardId());
+		accCardOpre.setChannelId(user.getStaff().getServiceHall().getServiceHallId());
+		accCardOpre.setStaffId(user.getStaffId());
+		accCardOpre.setCusName(cusInfo.getCustomerName());
+		accCardOpre.setCusType(cusInfo.getCustomerType());
+		accountCardBalanceOperateRepo.save(accCardOpre);
+	}
+
+	private CardCancelWithCOSResponse preCancelWithCOS(PreCancelRequest queryModel, User user) {
+		CardCancelWithCOSRequest cardCancelWithCOSRequest = new CardCancelWithCOSRequest();
+		CardCancelWithCOSResponse cardCOSRes = new CardCancelWithCOSResponse();
+		super.commSet(cardCancelWithCOSRequest, user);
+		jhAgency(cardCancelWithCOSRequest, queryModel.getCardId(), user);
+		cardCancelWithCOSRequest.setCardId(queryModel.getCardId());
+		cardCancelWithCOSRequest.setCosProvider(queryModel.getProvider());
+		try {
+			cardCOSRes = financeBinService.cardCancelWithCOS(cardCancelWithCOSRequest);
+		} catch (ApiRequestException | IOException e) {
+			e.printStackTrace();
+		}
+		return cardCOSRes;
+
+	}
+	//预注销V2 银行卡退款
+	private CardCancelWithCOSResponse preCancelWithCOSV2(PreCancelRequest queryModel, User user) {
+		CardCancelWithCOSV2Request cardCancelWithCOSV2Request = new CardCancelWithCOSV2Request();
+		CardCancelWithCOSResponse cardCOSRes = new CardCancelWithCOSResponse();
+		super.commSet(cardCancelWithCOSV2Request, user);
+		jhAgency(cardCancelWithCOSV2Request, queryModel.getCardId(), user);
+		cardCancelWithCOSV2Request.setCardId(queryModel.getCardId());
+		cardCancelWithCOSV2Request.setCosProvider(queryModel.getProvider());
+		cardCancelWithCOSV2Request.setBankCardId(queryModel.getBankCardId());
+		cardCancelWithCOSV2Request.setCusTel(queryModel.getCusTel());
+		cardCancelWithCOSV2Request.setCusType(queryModel.getCusType());
+		cardCancelWithCOSV2Request.setBankType(queryModel.getBankType());
+		if(queryModel.getCusType()==2) {
+			cardCancelWithCOSV2Request.setProvince(queryModel.getProvince());
+			cardCancelWithCOSV2Request.setSell(queryModel.getSell());
+		}
+		cardCancelWithCOSV2Request.setCusName(queryModel.getCusName());
+		try {
+			cardCOSRes = financeBinService.cardCancelWithCOSV2(cardCancelWithCOSV2Request);
+		} catch (ApiRequestException | IOException e) {
+			e.printStackTrace();
+		}
+		return cardCOSRes;
+	}
+	//预注销释放车牌
+	private CardCancelWithCOSResponse cardPrecancelReleasePlate(PreCancelRequest queryModel, User user) {
+		CardCancelWithCOSRequest cardCancelWithCOSRequest = new CardCancelWithCOSRequest();
+		CardCancelWithCOSResponse cardCOSRes = new CardCancelWithCOSResponse();
+		super.commSet(cardCancelWithCOSRequest, user);
+		jhAgency(cardCancelWithCOSRequest, queryModel.getCardId(), user);
+		cardCancelWithCOSRequest.setCardId(queryModel.getCardId());
+		cardCancelWithCOSRequest.setCosProvider(queryModel.getProvider());
+		try {
+			cardCOSRes = financeBinService.cardPrecancelReleasePlate(cardCancelWithCOSRequest);
+		} catch (ApiRequestException | IOException e) {
+			e.printStackTrace();
+		}
+		return cardCOSRes;
+
+	}
+
+	private CardInfoQueryResponse QueryCardInfo(String id, User user) throws Exception {
+		CardInfoQueryRequest cardInfoQueryRequest = new CardInfoQueryRequest();
+		super.commSet(cardInfoQueryRequest, user);
+		cardInfoQueryRequest.setCardId(id);
+		return inqueryBinService.cardInfoQuery(cardInfoQueryRequest);
+	}
+
+	private CardCancelResponse cardCancel(CancelRequest queryModel, User user) throws Exception {
+		CardCancelConfirmRequest cardCancelConfirmRequest = new CardCancelConfirmRequest();
+		CardCancelResponse response = new CardCancelResponse();
+		super.commSet(cardCancelConfirmRequest, user);
+		jhAgency(cardCancelConfirmRequest, queryModel.getCardId(), user);
+		cardCancelConfirmRequest.setCardId(queryModel.getCardId());
+		cardCancelConfirmRequest.setCardBalance(queryModel.getCardBalance());
+//		AccountCardBalanceOperate accCardOpre = new AccountCardBalanceOperate();
+//		if (queryModel.getCardType() == 2) {
+//			List<AccountCardBalanceOperate> list = accountCardBalanceOperateRepo.listByCardId(queryModel.getCardId());
+//			if (null != list && list.size() != 0) {
+//				accCardOpre = list.get(0);
+//				if (accCardOpre.getCosProvider() == 0) {
+//					cardCancelConfirmRequest.setCardBalance(-1L);
+//				}
+//			} 
+////			else {
+////				response.setStatus(0);
+////				response.setMessage("数据错误~，请联系管理员");
+////				return response;
+////			}
+//		}
+
+		cardCancelConfirmRequest.setInvoiceCost(0L);
+		response = financeBinService.cardCancelConfirm(cardCancelConfirmRequest);
+//		if (response.getStatus() == 1 && queryModel.getCardType() == 2) {
+//			//accCardOpre.setBalance(response.getRefund());
+//			accCardOpre.setCustomerId("");
+//			accCardOpre.setOperateStatus(0);
+//			accCardOpre.setCreateDate(CssUtil.getNowDate());
+//			accCardOpre.setCreateTime(CssUtil.getNowDateTimeStrWithT());
+//			accCardOpre.setBalanceType(0);
+//			accountCardBalanceOperateRepo.save(accCardOpre);
+//		}
+		return response;
+	}
+
+	private void updateCancelTime(String cardId) {
+		CancelledCardDetail cancelledCardDetail = new CancelledCardDetail();
+		cancelledCardDetail = cancelDetailRepo.findByCardId(cardId);
+		cancelledCardDetail.setCancellationTime("19800101");
+		cancelDetailRepo.save(cancelledCardDetail);
+	}
+	
+	public boolean checkCancelReleasePlate(String agencyId) {
+		List<PerCancel> list = perCancelRepo.listByAgencyId(agencyId);
+		if(null!=list&&list.size()!=0) {
+			return true;
+		}else {
+			return false;
+		}
+	}
+
+	@Override
+	public CardInfo findById(@Valid String id) {
+		return cardInfoRepo.findByCardId(id);
+	}
+	
+	private void deleteCancelDetail(String cardId) {
+		CancelledCardDetail cancelledCardDetail = cancelDetailRepo.findByCardId(cardId);
+		AccountCardBalanceOperate accountCardBalanceOperate = accountCardBalanceOperateRepo.findByCardId(cardId);
+		if(null!=cancelledCardDetail) {
+			cancelDetailRepo.delete(cancelledCardDetail);
+		}
+		if(null!=accountCardBalanceOperate) {
+			accountCardBalanceOperateRepo.delete(accountCardBalanceOperate);
+		}
+	}
+	
+	@Override
+	public CustomerInfo getCusInfo(String customerId) {
+		return customerInfoRepo.findByCustomerId(customerId);
+	}
+
+	@Override
+	public CardCancelResponse saveFile(String cardId, MultipartFile[] file) throws IOException {
+	    CardCancelResponse res = new CardCancelResponse();
+	    try {
+			savePic(file,cardId);
+			return res;
+		} catch (ManagerException e) {
+			e.printStackTrace();
+			res.setStatus(0);
+			return res;
+		}
+	}
+	@Transactional
+	private void savePic(MultipartFile[] file,String cardId) throws ManagerException {
+		if(file==null){
+			return;
+			}
+			CardInfo cardInfo = cardInfoRepo.findByCardId(cardId);
+			String parentDirRelativePath = File.separator+MyFinals.CANCEL_CUSCONFIRM_IMG+File.separator+cardInfo.getAgencyId()+File.separator+DateTimeFormatter.ofPattern("yyyyMMdd").format(LocalDate.now())+File.separator+cardId;
+			AccountCardBalanceOperate oprt = accountCardBalanceOperateRepo.findByCardId(cardId);
+			String fileName = "";
+			for(int i=0;i<file.length;i++) {
+				fileName+=file[i].getOriginalFilename()+";";
+			}
+			oprt.setFileName(fileName);
+			oprt.setFilePath(parentDirRelativePath);
+			oprt.setAttachStatus(0);
+			accountCardBalanceOperateRepo.save(oprt);
+			String fileAbsolutePath = savePic(file,cardId, parentDirRelativePath);
+			System.out.println("fileAbsolutePath:"+fileAbsolutePath);
+	}
+	public static String savePic(MultipartFile[] file,String cardId,String parentDir) throws ManagerException{
+		String destDirPath = FileHelper.getDataPath().concat(File.separator).concat(parentDir).concat(File.separator);
+		File destDir = new File(destDirPath);
+		if(!destDir.exists()){destDir.mkdirs();}
+		for(int i=0;i<file.length;i++) {
+			String destFilePath = destDirPath+file[i].getOriginalFilename();
+			File destFile = new File(destFilePath);
+			saveFile(file[i],destFile);
+		}
+		return destDirPath;
+//		return getFilePathlWithOutRoot(destDirPath);	
+	}
+	private static void saveFile(MultipartFile file,File destFile) throws ManagerException{
+		OutputStream out = null;
+		try {
+			out = new FileOutputStream(destFile);
+			out.write(file.getBytes());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new ManagerException("文件存储失败");
+		}
+		 finally{
+			if(out!=null){
+				try {
+					out.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+					throw new ManagerException("文件流关闭失败");
+				}
+			}
+		}
+	}
+	public static String generateFileName(String cardId,String suffix) {
+		return cardId+suffix;
+	}
+	public static String getSuffix(String fileName){
+		return fileName.substring(fileName.lastIndexOf("."));
+	}
+	
+	private void supplyCancelDetail(CancelRequest req,User user) {
+		CardInfo cardInfo = cardInfoRepo.findByCardId(req.getCardId());
+		CancelledCardDetail detail = new CancelledCardDetail();
+		detail.setCancellationTime(new SimpleDateFormat("yyyyMMdd").format(new Date()));
+		detail.setCardId(req.getCardId());
+		detail.setInvoiceAmount((long) 0);
+		detail.setCreateTime(Calendar.getInstance());
+		detail.setStatus(0);
+		detail.setCardType(req.getCardType()/100);
+		detail.setAgencyId(user.getStaff().getServiceHall().getAgencyId());
+		detail.setChannelId(user.getStaff().getServiceHallId());
+		detail.setStaffId(user.getStaffId());
+		detail.setUserIdNum(cardInfo.getCustomer().getCustomerIdNum());
+		detail.setVehicleId(cardInfo.getVehicleId());
+		detail.setReplaceStatus(0);
+		cancelDetailRepo.save(detail);
+	}
+}

@@ -1,0 +1,701 @@
+package cn.com.taiji.css.manager.customerservice.finance;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.CellType;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.google.common.collect.Lists;
+
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.common.manager.pub.FileHelper;
+import cn.com.taiji.common.model.dao.LargePagination;
+import cn.com.taiji.common.model.pub.PoiExcelInfo;
+import cn.com.taiji.css.entity.BatchIssueBaseInfo;
+import cn.com.taiji.css.entity.User;
+import cn.com.taiji.css.manager.abstractmanager.AbstractDsiCommManager;
+import cn.com.taiji.css.manager.comm.FundSerialDetaiManager;
+import cn.com.taiji.css.manager.util.CssUtil;
+import cn.com.taiji.css.model.MyFinals;
+import cn.com.taiji.css.model.apply.inportInfomation.BatchIssueBaseInfoShowModel;
+import cn.com.taiji.css.model.apply.inportInfomation.InportInfomationRequset;
+import cn.com.taiji.css.model.apply.inportInfomation.InportInfomationResponse;
+import cn.com.taiji.css.model.customerservice.finance.CardRefundExcelModel;
+import cn.com.taiji.css.model.customerservice.finance.RefundInpExceptionResponse;
+import cn.com.taiji.css.repo.jpa.BatchIssueBaseInfoRepo;
+import cn.com.taiji.dsi.model.util.QTKUtils;
+import cn.com.taiji.qtk.entity.AccountRefundDetail;
+import cn.com.taiji.qtk.entity.AccountRefundLog;
+import cn.com.taiji.qtk.entity.CardCancelRefund;
+import cn.com.taiji.qtk.entity.CardRefundExportLog;
+import cn.com.taiji.qtk.entity.FundSerialDetail;
+import cn.com.taiji.qtk.entity.dict.BankType;
+import cn.com.taiji.qtk.entity.dict.ChargeType;
+import cn.com.taiji.qtk.entity.dict.RefundDetailType;
+import cn.com.taiji.qtk.entity.dict.ServiceType;
+import cn.com.taiji.qtk.entity.dict.VehiclePlateColorType;
+import cn.com.taiji.qtk.repo.jpa.AccountRefundDetailRepo;
+import cn.com.taiji.qtk.repo.jpa.AccountRefundLogRepo;
+import cn.com.taiji.qtk.repo.jpa.CardCancelRefundRepo;
+import cn.com.taiji.qtk.repo.jpa.CardRefundExportLogRepo;
+import cn.com.taiji.qtk.repo.jpa.FundSerialDetailRepo;
+
+/**
+ * @ClassName InportInfomationManagerImpl
+ * @Description TODO
+ * @author fxd
+ * @date 2019年07月24日 17:16:38
+ */
+@Service
+public class InportRefundManagerImpl extends AbstractDsiCommManager implements InportRefundManager{
+	
+	@Autowired
+	private BatchIssueBaseInfoRepo batchIssueBaseInfoRepo;
+	
+	@Autowired
+	private CardCancelRefundRepo cardCancelRefundRepo; 
+	@Autowired
+	private AccountRefundDetailRepo accountRefundDetailRepo;
+	@Autowired
+	private FundSerialDetaiManager fundSerialDetaiManager;
+	
+	@Autowired
+	private CardRefundExportLogRepo cardRefundExportLogRepo;
+	@Autowired
+	private AccountRefundLogRepo accountRefundLogRepo;
+	@Autowired
+	private FundSerialDetailRepo fundSerialDetailRepo;
+	private static final Map<Integer,String> userType = new HashMap<Integer, String>();
+	/**
+	 * 证件类型
+	 */
+	private static final Map<Integer,String> identType = new HashMap<Integer, String>();
+	static	{
+			identType.put(101 ,"身份证（含临时身份证）");
+			identType.put(102 ,"护照（限外籍人士）");
+			identType.put(103 ,"港澳居民来往内地通行证");
+			identType.put(104 ,"台湾居民来往大陆通行证");
+			identType.put(105 ,"军官证");
+			identType.put(106 ,"武警警察身份证");
+			identType.put(201 ,"统一社会信用代码证书");
+			identType.put(202 ,"组织机构代码证");
+			identType.put(203 ,"营业执照");
+			identType.put(204 ,"事业单位法人证书");
+			identType.put(205 ,"社会团体法人登记证书");
+			identType.put(206 ,"律师事务所执业许可证");
+			userType.put(1, "个人");
+			userType.put(2, "单位");
+		}
+	
+	
+	/**
+	 * 获取行数据
+	 * @throws IOException 
+	 * 
+	 */
+	public List<CardRefundExcelModel> getLines(File importFile) throws IOException
+	{
+		PoiExcelInfo info = new PoiExcelInfo();
+		info.setColSize(MyFinals.REFUND_INFO_SERVICE);//总数据列数
+		info.setExcelInput(new FileInputStream(importFile));
+		info.setSheetIndex(0);
+		info.setFromRow(1);
+		info.setToRow(-1);
+		info.setBreakOnRowNull(true);
+		info.setXlsx(true);
+		Workbook workbook = createWorkbook(info.getExcelInput(), info.isXlsx());
+		List<CardRefundExcelModel> rs = new ArrayList<CardRefundExcelModel>();
+		Sheet sheet = workbook.getSheetAt(info.getSheetIndex()); 
+		if (sheet == null) return rs;
+		int fromRow = info.getFromRow() < 0 ? 0 : info.getFromRow();
+		int toRow = info.getToRow() < 0 ? Integer.MAX_VALUE : info.getToRow();
+		if (toRow < fromRow) throw new IllegalArgumentException("结束行号不能小于开始行号.");
+		for (int i = 0; i <= toRow; i++)
+		{
+			if (i < fromRow) continue;
+			Row row = sheet.getRow(i);
+			if (info.isBreakOnRowNull() && row == null) break;
+			if (row == null) continue;// 空行不退出时，忽略空行
+			Map<Integer, Cell> rowData = new HashMap<Integer, Cell>();
+			for (int j = 0; j < info.getColSize(); j++)
+			{
+				Cell cell = row.getCell(j);
+				// 为空时，new一个空cell
+				rowData.put(j, cell == null ? getCell(sheet, i, j) : cell);
+			}
+			CardRefundExcelModel e = row2Model(i, rowData);
+			if (e != null) rs.add(e);
+		}
+		return rs;
+	}
+	
+	
+	public  InportInfomationResponse saveFile(MultipartFile file) throws ManagerException {
+		InportInfomationResponse response =new InportInfomationResponse();
+		String parentDirRelativePath = MyFinals.CANCEL_REFUND_RESPONSE;
+		String fileAbsolutePath = savePic(file, parentDirRelativePath);
+		String fileName=file.getOriginalFilename();
+		response.setFilePath(fileAbsolutePath);
+		response.setFileName(fileName);
+		return response;
+}
+	
+	private static String savePic(MultipartFile file,String parentDir) throws ManagerException{
+		String destDirPath = FileHelper.getDataPath().concat(File.separator).concat(parentDir).concat(File.separator);
+		File destDir = new File(destDirPath);
+		if(!destDir.exists()){destDir.mkdirs();}
+		String destFilePath = destDirPath+generateFileName(file.getOriginalFilename());
+		File destFile = new File(destFilePath);
+		saveFile(file,destFile);
+		return destDirPath;
+//		return getFilePathlWithOutRoot(destDirPath);
+	}
+	
+	
+	public static String generateFileName(String suffix) {
+		return suffix;
+	}
+	public static String getSuffix(String fileName){
+		return fileName.substring(fileName.lastIndexOf("."));
+	}
+	public static String generateFileName(MultipartFile file){
+		return getSuffix(file.getOriginalFilename());
+	}
+	
+	private static Workbook createWorkbook(InputStream in, boolean xlsx) throws IOException
+	{
+		return xlsx ? new XSSFWorkbook(in) : new HSSFWorkbook(new POIFSFileSystem(in));
+	}
+	
+	/**
+	 * 获取指定单元格，存在返回值，不存在新建单元格
+	 * 
+	 * @param sheet
+	 *            sheet页
+	 * @param row
+	 *            行号
+	 * @param col
+	 *            列号
+	 * @return 单元格
+	 */
+	public static Cell getCell(Sheet sheet, int row, int col)
+	{
+		Row sheetRow = sheet.getRow(row);
+		if (sheetRow == null) sheetRow = sheet.createRow(row);
+		Cell cell = sheetRow.getCell(col);
+		if (cell == null) cell = sheetRow.createCell(col);
+		return cell;
+	}
+	/**
+	 * 
+	 * @param file
+	 * @param destFile
+	 * @throws ManagerException
+	 */
+	private static void saveFile(MultipartFile file,File destFile) throws ManagerException{
+		OutputStream out = null;
+		try {
+			out = new FileOutputStream(destFile);
+			out.write(file.getBytes());
+		} catch (IOException e) {
+			e.printStackTrace();
+			throw new ManagerException("文件存储失败");
+		}
+		 finally{
+			if(out!=null){
+				try {
+					out.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+					throw new ManagerException("文件流关闭失败");
+				}
+			}
+		}
+	}
+	
+	
+	public CardRefundExcelModel row2Model(int row, Map<Integer, Cell> rowData)
+	{
+		if (row == 0) return null;
+		if (rowData.size() != MyFinals.REFUND_INFO_SERVICE)
+		{
+			logger.info(row + "行数据不完整");
+			return null;
+		}
+		rowData.get(0).setCellType(CellType.STRING);//  流水号
+		rowData.get(1).setCellType(CellType.STRING);//	账号/卡号
+		rowData.get(2).setCellType(CellType.STRING);//	户名
+		rowData.get(3).setCellType(CellType.STRING);//	金额
+		rowData.get(4).setCellType(CellType.STRING);//	ETC卡号
+		rowData.get(5).setCellType(CellType.STRING);//	交易结果
+		
+		 
+//		 Integer packageNum        =	Integer.valueOf(rowData.get(0).getStringCellValue().trim());
+		 String bankCardId         =	rowData.get(1).getStringCellValue().trim();
+		 String userName           =	rowData.get(2).getStringCellValue().trim();
+		 String postBalance         =	rowData.get(3).getStringCellValue().trim();
+		 String cardId             =	rowData.get(4).getStringCellValue().trim();
+		 String message            =	rowData.get(5).getStringCellValue().trim();
+		 String errorMsg			=  rowData.get(6).getStringCellValue().trim();
+
+		CardRefundExcelModel info = new CardRefundExcelModel();
+		if(null!=bankCardId&&bankCardId!="") {
+			info.setBankCardId(bankCardId);
+		}
+		if(null!=userName&&userName!="") {
+			info.setCustomerName(userName);
+		}
+		if(null!=postBalance&&postBalance!="") {
+			info.setPostBalance((long)(Double.parseDouble(postBalance.replaceAll(",",""))*100));
+		}
+		if(null!=cardId&&cardId!="") {
+			info.setCardId(cardId);
+		}
+		if(null!=message&&message!="") {
+			info.setMessage(message);
+		}
+		if(null!=errorMsg&&errorMsg!="") {
+			info.setErrorMsg(errorMsg);
+		}
+		return info;
+	}
+	
+	
+	// 插入数据
+	@Override
+	@Transactional(rollbackFor = { Exception.class })
+	public List<RefundInpExceptionResponse> importExcel(List<CardRefundExcelModel> excelList, HttpServletResponse response)  {
+		List<RefundInpExceptionResponse> resList = Lists.newArrayList();
+		List<AccountRefundDetail> refundList = Lists.newArrayList();
+		List<AccountRefundLog> refundLogList = Lists.newArrayList();
+		List<FundSerialDetail> fundserilList = Lists.newArrayList();
+		//将excelList中数据按卡号单条查询,不能采用in查询，如果某一条查询不到，需要返回错误信息
+		for(CardRefundExcelModel mo:excelList) {
+			RefundInpExceptionResponse res = new RefundInpExceptionResponse();
+			//卡号为空
+			if(null==mo.getCardId()||mo.getCardId()=="") {
+				res.setCardId(mo.getCardId());
+				res.setErrorMsg("etc卡号为空");
+				resList.add(res);
+				continue;
+			}
+			AccountRefundDetail refundDetail = accountRefundDetailRepo.findByCardId(mo.getCardId());
+			//退款表无数据
+			if(null==refundDetail) {
+				res.setCardId(mo.getCardId());
+				res.setErrorMsg("未查询到退款数据");
+				resList.add(res);
+				continue;
+			}
+			//退款状态不是已导出状态
+			if(!refundDetail.getRefundType().equals(RefundDetailType.TFYDC)) {
+				res.setCardId(mo.getCardId());
+				res.setErrorMsg("退款状态不是已导出状态");
+				resList.add(res);
+				continue;
+			}
+			if("52010102007,52010102005,52010102018,52010102002".contains(refundDetail.getAgencyId())) {
+				res.setCardId(mo.getCardId());
+				res.setErrorMsg("该ETC卡属于工建行");
+				resList.add(res);
+				continue;
+			}
+			if(mo.getMessage().equals("交易成功")) {
+				//校验通过后；入报表、日志表  改退款状态
+				//改退款状态
+				refundDetail.setRefundType(RefundDetailType.YWCTF);
+				refundDetail.setCompleBalance(refundDetail.getRefundBalance());
+				refundDetail.setCompleTime(QTKUtils.getNowDateTimeStrWithoutT());
+				//入报表
+				FundSerialDetail fundSerial = new FundSerialDetail();
+				try {
+					fundSerial = saveFundSerial(ServiceType.CANCELREFUND, ChargeType.CASH,1, refundDetail, "", "");
+					fundserilList.add(fundSerial);
+				} catch (ManagerException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}else {
+				refundDetail.setRefundType(RefundDetailType.RFFL);
+			}
+			refundList.add(refundDetail);
+			//入日志表
+			AccountRefundLog refundLog = saveRefundDetailLog(refundDetail,mo);
+			refundLogList.add(refundLog);
+		}
+		//无错误信息时入库
+		if(null==resList||resList.size()==0) {
+			accountRefundLogRepo.saveAll(refundLogList);
+			accountRefundDetailRepo.saveAll(refundList);
+			fundSerialDetailRepo.saveAll(fundserilList);
+		}
+		//将报错信息写入文件
+		 //writeErrorMsgFile(resList,response);
+		return resList;
+		
+//		InportInfomationResponse rsp=new InportInfomationResponse();
+//		Map<String ,CardRefundExcelModel> maps= new HashMap<>();
+//		List<String> cardIds=new ArrayList<String>();
+//		//将导入回盘文件内的卡号取出存放list 方便查询实体
+//		for(CardRefundExcelModel cardRefundExcelModel: inportInfomationRequset) {
+//			if(  cardRefundExcelModel.getCardId() ==null || StringUtils.isEmpty(cardRefundExcelModel.getCardId()) ) {
+//				rsp.setStatus(-1);
+//				rsp.setMessage("导入表内有ETC卡号为空的数据，请检查！");
+//				return rsp;
+//			}
+//			cardIds.add(cardRefundExcelModel.getCardId());
+//			maps.put(cardRefundExcelModel.getCardId(), cardRefundExcelModel);
+//		}
+//		//将查询分1000条一次
+//		List<List<String>> partition = Lists.partition(cardIds, 1000);
+//		List<AccountRefundDetail> list =new ArrayList<AccountRefundDetail>();
+//		for(List<String> q: partition) {
+//			List<AccountRefundDetail> listByCardIds = accountRefundDetailRepo.listByCardIds(q);
+//			if(listByCardIds.size()>0) {
+//				list.addAll(listByCardIds);
+//			}
+//		}
+//		System.out.println(list.size());
+//		//获取到了全部的实体  开始遍历进行赋值
+//		List<AccountRefundDetail> save =new ArrayList<AccountRefundDetail>();
+//		for(AccountRefundDetail accountRefundDetail :list) {
+//			String cardId= accountRefundDetail.getCardId();
+//			CardRefundExcelModel cardRefundExcelModel =maps.get(cardId);
+//				//如果卡号等于当前外部循环的卡号，则判断他的交易状态    交易成功   改退费状态为已完成退费  同时录入已退费金额   交易失败则改退费转态为退费失败
+//				if(cardId.equals(cardRefundExcelModel.getCardId()) ) {
+//					if("交易成功".equals(cardRefundExcelModel.getMessage())) {
+//						accountRefundDetail.setRefundType(RefundDetailType.YWCTF);
+//						if(accountRefundDetail.getCompleBalance()==null) {
+//							accountRefundDetail.setCompleBalance(cardRefundExcelModel.getPostBalance());
+//						}else {
+//							accountRefundDetail.setCompleBalance(accountRefundDetail.getCompleBalance()+cardRefundExcelModel.getPostBalance());
+//						}
+//						accountRefundDetail.setCompleTime(new SimpleDateFormat("yyyMMdd").format(new Date()));
+//					}else {
+//						accountRefundDetail.setRefundType(RefundDetailType.RFFL);
+//					}
+//					save.add(accountRefundDetail);
+//			}
+//		}
+//		accountRefundDetailRepo.saveAll(save);
+//		rsp.setMessage("该文件数据已解析入库");
+//		rsp.setStatus(1);
+//		return rsp;
+	}
+
+
+	private void writeErrorMsgFile(List<RefundInpExceptionResponse> resList, HttpServletResponse response) {
+		//String filePath = "C:/"+QTKUtils.getDateString().substring(0, 10)+"退款报错信息.txt" ;
+		OutputStream  fos = null ;
+		String content = "";
+		File file = new File("/home/filedata/refundExport/"+QTKUtils.getDateString().substring(0, 10)+"退款报错信息.txt");
+		try {
+			 /*  设置文件ContentType类型，这样设置，会自动判断下载文件类型   */
+	        response.setContentType("application/multipart/form-data");
+	        /* 设置文件头：最后一个参数是设置下载文件名(假如我们叫a.ini)   */
+	        response.setHeader("Content-Disposition", "attachment;filename=a.ini");
+			//根据文件路径创建输出流
+			fos  = response.getOutputStream();
+			for(RefundInpExceptionResponse re:resList) {
+				//把string转换为byte数组；
+				content=re.getCardId()+"  "+re.getErrorMsg();
+				byte[] array = content.getBytes() ;
+				//把byte数组输出；
+				fos.write( array );
+				String newLine = System.getProperty("line.separator");			 
+				fos.write(newLine.getBytes());
+			}
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}catch (IOException e) {
+			e.printStackTrace();
+		}finally{
+			if ( fos != null) {
+				try {
+					fos.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
+
+	@Override
+	public LargePagination<BatchIssueBaseInfoShowModel> query(InportInfomationRequset queryModel) {
+		queryModel.paramCheck();
+		LargePagination<BatchIssueBaseInfo> largePage = batchIssueBaseInfoRepo.largePage(queryModel);
+		if (largePage.getResult().isEmpty()) {
+			return null;
+		}
+		List<BatchIssueBaseInfoShowModel> modelList = new ArrayList<BatchIssueBaseInfoShowModel>();
+		for(BatchIssueBaseInfo oldModel : largePage.getResult()) {
+			BatchIssueBaseInfoShowModel newModel = new BatchIssueBaseInfoShowModel();
+			newModel.setIdentNo(oldModel.getIdentNo());
+			newModel.setIdentType(identType.get(oldModel.getIdentType()));
+			newModel.setOrderNo(oldModel.getOrderNo());
+			newModel.setRespMessage(oldModel.getRespMessage());
+			newModel.setUserMobile(oldModel.getUserMobile());
+			newModel.setUserType(userType.get(oldModel.getUserType()));
+			newModel.setVehiclePlate(oldModel.getVehiclePlate());
+			newModel.setVehiclePlateColor(VehiclePlateColorType.valueOfCode(oldModel.getVehiclePlateColor()).getValue());
+			modelList.add(newModel);
+		}
+		LargePagination<BatchIssueBaseInfoShowModel> pagn = new LargePagination<BatchIssueBaseInfoShowModel>();
+		pagn.setResult(modelList);
+		pagn.setPageSize(largePage.getPageSize());
+		pagn.setCurrentPage(largePage.getCurrentPage());
+		pagn.setHasMore(largePage.isHasMore());
+		return pagn;
+	}
+	
+	
+	@Override
+	public List<String> queryBatch() {
+		List<String> list = batchIssueBaseInfoRepo.list();
+		return list;
+	}
+	
+	@Transactional
+	public File getExcelFilePath(CardRefundExcelModel queryModel,User user) throws ManagerException {
+		queryModel.paramCheck();
+	    File file = new File("/home/filedata/refundExport/"+System.currentTimeMillis()+".xls");
+	    if(!file.getParentFile().exists()) {
+	    	file.getParentFile().mkdirs();
+	    }
+	    if(file.exists()) {
+	    	//文件存在
+	    	return file;
+	    }
+	    //视图结果集
+	    List<CardCancelRefund> listByTime = cardCancelRefundRepo.listByTime(queryModel.getStTime(), queryModel.getEdTime(), RefundDetailType.GLYQR);
+	    //原表结果集
+	    List<AccountRefundDetail> listByCancelTimeAndType = accountRefundDetailRepo.listByCancelTimeAndType(queryModel.getStTime(), queryModel.getEdTime(), RefundDetailType.GLYQR);
+	    
+//	    List<List<String>> partition = Lists.partition(cardIds, 1000);
+	    List<String> cards=new ArrayList<String>();
+        // 创建excel
+        HSSFWorkbook wk = new HSSFWorkbook();
+        // 创建一张工作表
+        HSSFSheet sheet = wk.createSheet();
+        // 2
+        sheet.setDefaultColumnWidth(20);
+        sheet.setDefaultRowHeightInPoints(20*100);
+        HSSFRow row = sheet.createRow(0);
+        // 创建第一行的第一个单元格
+        // 想单元格写值
+        HSSFCell cell = row.createCell((short) 0);
+        cell.setCellValue("第三方流水号");
+        cell = row.createCell((short)1);
+        cell.setCellValue("手机号");
+        cell = row.createCell((short)2);
+        cell.setCellValue("银行卡号");
+        cell = row.createCell((short)3);
+        cell.setCellValue("用户名");
+        cell = row.createCell((short)4);
+        cell.setCellValue("开户行所在省（单位用户必填）");
+        cell = row.createCell((short)5);
+        cell.setCellValue("开户行所在市（单位用户必填）");
+        cell = row.createCell((short)6);
+        cell.setCellValue("银行名");
+        cell = row.createCell((short)7);
+        cell.setCellValue("退费金额");
+        cell = row.createCell((short)8);
+        cell.setCellValue("ETC卡号");
+        cell = row.createCell((short)9);
+        cell.setCellValue("注销渠道名称");
+        cell = row.createCell((short)10);
+        cell.setCellValue("注销日期");
+        cell = row.createCell((short)11);
+        cell.setCellValue("车牌号");
+        cell = row.createCell((short)12);
+        // 创建第一行
+        List<String> cardIds=new ArrayList<String>();
+        int j=0;
+        for (short i=0;i<listByTime.size();i++)
+        {
+        	//有附件需判断附件状态后才能导出
+        	if((listByTime.get(i).getFileName()!=null && listByTime.get(i).getAttachStatus()==1) || listByTime.get(i).getFileName() ==null) {
+        		//if( !hasText(listByTime.get(i).getCusTel())  || !hasText(listByTime.get(i).getBankCardId()) || !hasText(listByTime.get(i).getCusName())) continue;
+        		if(!hasText(listByTime.get(i).getBankCardId()) || !hasText(listByTime.get(i).getCusName())||listByTime.get(i).getRefundBalance()==0) continue;
+        		row = sheet.createRow(j+1);
+        		j++;
+        		row.createCell(0).setCellValue(j+1);
+        		row.createCell(1).setCellValue(listByTime.get(i).getCusTel());
+        		row.createCell(2).setCellValue(listByTime.get(i).getBankCardId());
+        		row.createCell(3).setCellValue(listByTime.get(i).getCusName());
+        		row.createCell(4).setCellValue(listByTime.get(i).getProvince());  
+        		row.createCell(5).setCellValue(listByTime.get(i).getSell());
+        		if(null!=listByTime.get(i).getBankType()) {
+        			row.createCell(6).setCellValue(BankType.fromCode(listByTime.get(i).getBankType()).getValue());
+        		}
+        		row.createCell(7).setCellValue(listByTime.get(i).getRefundBalance().doubleValue()/100);
+        		row.createCell(8).setCellValue(listByTime.get(i).getCardId());
+        		row.createCell(9).setCellValue(listByTime.get(i).getCancelAgencyName());
+        		row.createCell(10).setCellValue(listByTime.get(i).getCancelTime());
+        		row.createCell(11).setCellValue(listByTime.get(i).getVehicleId());
+        		cardIds.add(listByTime.get(i).getCardId());//要导出退费的ETC卡号
+//        		cards.add(e)
+        	}
+        }
+       try {
+           wk.write(new FileOutputStream(file));
+           List<CardRefundExportLog> logs  =new ArrayList<CardRefundExportLog>();
+           List<AccountRefundDetail> save =new ArrayList<AccountRefundDetail>();
+           List<FundSerialDetail> fundSerialDetails =new ArrayList<FundSerialDetail>();
+           for(AccountRefundDetail accountRefundDetail:listByCancelTimeAndType) {
+        	   boolean bool = cardIds.contains(accountRefundDetail.getCardId());
+        	   if(!bool) continue;
+               FundSerialDetail fundSerialDetail = new FundSerialDetail();
+        	   CardRefundExportLog log=new CardRefundExportLog();
+        	   accountRefundDetail.setRefundType(RefundDetailType.TFYDC);
+        	   log.setStaffId(user.getStaff().getStaffId());
+        	   log.setCreateTime(CssUtil.getNowDate());
+        	   if(accountRefundDetail.getRefundBalance()==null) {
+        		   log.setBalance(0L);
+	   		   }else {
+	   			log.setBalance(accountRefundDetail.getRefundBalance());
+	   		   }
+        	   log.setCardId(accountRefundDetail.getCardId());
+        	   fundSerialDetail.setServiceHallId(user.getStaff().getServiceHall().getServiceHallId());
+	   		   fundSerialDetail.setStaffId(user.getStaff().getStaffId());
+	   		   fundSerialDetail.setStaffName(user.getName());
+	   		   fundSerialDetail.setAgencyId(user.getStaff().getServiceHall().getAgencyId());
+	   		   fundSerialDetail.setServiceType(ServiceType.CANCELREFUND);
+	   		   fundSerialDetail.setChargeType(ChargeType.CASH);
+	   		   fundSerialDetail.setHandleType(1);
+	   		   if(accountRefundDetail.getRefundBalance()==null) {
+	   			   fundSerialDetail.setHandleMoney(0L);
+	   		   }else {
+	   			 fundSerialDetail.setHandleMoney(accountRefundDetail.getRefundBalance());
+	   		   }
+	   		   fundSerialDetail.setHandleDate(new SimpleDateFormat("yyyMMdd").format(new Date()));
+	   		   fundSerialDetail.setHandleTime(Calendar.getInstance());
+	   		   fundSerialDetail.setCardId(accountRefundDetail.getCardId());
+	   		   fundSerialDetail.setObuId("");
+	   		   fundSerialDetail.setVehicleId("");
+        	   save.add(accountRefundDetail);
+        	   logs.add(log);
+        	   fundSerialDetails.add(fundSerialDetail);
+        	   }
+           
+           
+//           for(int i=0;i<listByCancelTimeAndType.size();i++) {
+//        	   System.out.println("共"+listByCancelTimeAndType.size()+"条，当前执行到第"+i+"条");
+//        	   AccountRefundDetail accountRefundDetail = listByCancelTimeAndType.get(i);
+//        	   if((listByTime.get(i).getFileName()!=null && listByTime.get(i).getAttachStatus()==1) || listByTime.get(i).getFileName() ==null) {
+//           		if( !hasText(listByTime.get(i).getCusTel())  || !hasText(listByTime.get(i).getBankCardId()) || !hasText(listByTime.get(i).getCusName())) continue;
+//        	   
+//               FundSerialDetail fundSerialDetail = new FundSerialDetail();
+//        	   CardRefundExportLog log=new CardRefundExportLog();
+//        	   accountRefundDetail.setRefundType(RefundDetailType.TFYDC);
+//        	   log.setStaffId(user.getStaff().getStaffId());
+//        	   log.setCreateTime(CssUtil.getNowDate());
+//        	   if(accountRefundDetail.getRefundBalance()==null) {
+//        		   log.setBalance(0L);
+//	   		   }else {
+//	   			log.setBalance(accountRefundDetail.getRefundBalance());
+//	   		   }
+//        	   log.setCardId(accountRefundDetail.getCardId());
+//        	   fundSerialDetail.setServiceHallId(user.getStaff().getServiceHall().getServiceHallId());
+//	   		   fundSerialDetail.setStaffId(user.getStaff().getStaffId());
+//	   		   fundSerialDetail.setStaffName(user.getName());
+//	   		   fundSerialDetail.setAgencyId(user.getStaff().getServiceHall().getAgencyId());
+//	   		   fundSerialDetail.setServiceType(ServiceType.CANCELREFUND);
+//	   		   fundSerialDetail.setChargeType(ChargeType.CASH);
+//	   		   fundSerialDetail.setHandleType(1);
+//	   		   if(accountRefundDetail.getRefundBalance()==null) {
+//	   			   fundSerialDetail.setHandleMoney(0L);
+//	   		   }else {
+//	   			 fundSerialDetail.setHandleMoney(accountRefundDetail.getRefundBalance());
+//	   		   }
+//	   		   fundSerialDetail.setHandleDate(new SimpleDateFormat("yyyMMdd").format(new Date()));
+//	   		   fundSerialDetail.setHandleTime(Calendar.getInstance());
+//	   		   fundSerialDetail.setCardId(accountRefundDetail.getCardId());
+//	   		   fundSerialDetail.setObuId("");
+//	   		   fundSerialDetail.setVehicleId("");
+//        	   save.add(accountRefundDetail);
+//        	   logs.add(log);
+//        	   fundSerialDetails.add(fundSerialDetail);
+//        	   }
+//           }
+           cardRefundExportLogRepo.saveAll(logs);
+           accountRefundDetailRepo.saveAll(save);
+           wk.close();
+	} catch (IOException e) {
+		e.printStackTrace();
+		throw new ManagerException("关闭流出错,请联系管理员");
+	}finally {
+		
+	}
+       return file;
+	}
+	public AccountRefundLog saveRefundDetailLog(AccountRefundDetail refundDetail, CardRefundExcelModel mo) {
+		AccountRefundLog entity = new AccountRefundLog();
+		entity.setCardId(refundDetail.getCardId());
+		entity.setStaffId("");
+		entity.setRefundBalance(refundDetail.getRefundBalance());
+		LocalDateTime now = LocalDateTime.now();
+		String enableTime = now.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"));
+		entity.setCreateTime(enableTime);
+		entity.setChannelId("");
+		entity.setRemoteIp(null);
+		if(mo.getMessage().equals("交易成功")) {
+			entity.setRecord("银行卡退款完成,金额为:"+((double)refundDetail.getRefundBalance())/100+"元");
+		}else {
+			entity.setRecord("银行卡退款失败,失败描述:"+mo.getErrorMsg());
+		}
+		return entity;
+	}
+	//报表入库
+	public FundSerialDetail saveFundSerial(ServiceType serviceType, ChargeType chargeType,Integer handleType, AccountRefundDetail refundDetail,String obuId,String vehicleId) throws ManagerException {
+		FundSerialDetail fundSerialDetail = new FundSerialDetail();
+		//货车帮放到单独的网点5201010600400000001
+		fundSerialDetail.setServiceHallId("5201010600400000001");
+		fundSerialDetail.setAgencyId("52010106004");
+		fundSerialDetail.setStaffId("qttkbbcx");
+		fundSerialDetail.setStaffName("退款报表查询");
+		fundSerialDetail.setServiceType(serviceType);
+		fundSerialDetail.setChargeType(chargeType);
+		fundSerialDetail.setHandleType(handleType);
+		fundSerialDetail.setHandleMoney(refundDetail.getRefundBalance());
+		fundSerialDetail.setHandleDate(new SimpleDateFormat("yyyMMdd").format(new Date()));
+		fundSerialDetail.setHandleTime(Calendar.getInstance());
+		fundSerialDetail.setCardId(refundDetail.getCardId());
+		fundSerialDetail.setObuId(obuId);
+		fundSerialDetail.setVehicleId(vehicleId);
+		return fundSerialDetail;		
+	}
+}
+

@@ -1,0 +1,379 @@
+/**
+ * @Title RechargeManagerImpl.java
+ * @Package cn.com.taiji.css.manager.customerservice.finance
+ * @Description TODO
+ * @author yaonanlin
+ * @date 2018年6月25日 下午5:16:38
+ * @version V1.0
+ */
+package cn.com.taiji.css.manager.customerservice.obu;
+
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.common.manager.net.http.binclient.ApiRequestException;
+import cn.com.taiji.common.model.dao.LargePagination;
+import cn.com.taiji.common.pub.StringTools;
+import cn.com.taiji.css.entity.User;
+import cn.com.taiji.css.manager.abstractmanager.AbstractDsiCommManager;
+import cn.com.taiji.css.manager.administration.pkg.ReplaceEquipmentManager;
+import cn.com.taiji.css.manager.comm.FundSerialDetaiManager;
+import cn.com.taiji.css.manager.util.CssUtil;
+import cn.com.taiji.css.model.customerservice.obu.ExchangeRequest;
+import cn.com.taiji.dsi.manager.comm.client.InqueryBinService;
+import cn.com.taiji.dsi.manager.comm.client.MaintenanceBinService;
+import cn.com.taiji.dsi.manager.comm.client.StorageBinService;
+import cn.com.taiji.dsi.model.comm.protocol.CommQtkRequset;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.OBUInfoQueryRequest;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.OBUInfoQueryResponse;
+import cn.com.taiji.dsi.model.comm.protocol.maintenance.OBUStatusChangeRequest;
+import cn.com.taiji.dsi.model.comm.protocol.maintenance.OBUStatusChangeResponse;
+import cn.com.taiji.dsi.model.common.storage.InventoryCheckRequest;
+import cn.com.taiji.dsi.model.common.storage.InventoryCheckResponse;
+import cn.com.taiji.qtk.entity.ExchangeObuLog;
+import cn.com.taiji.qtk.entity.FundSerialDetail;
+import cn.com.taiji.qtk.entity.OBUInfo;
+import cn.com.taiji.qtk.entity.ReplaceEquipmentCostDetail;
+import cn.com.taiji.qtk.entity.VehicleInfo;
+import cn.com.taiji.qtk.entity.dict.ChargeType;
+import cn.com.taiji.qtk.entity.dict.ServiceType;
+import cn.com.taiji.qtk.entity.dict.VehicleType;
+import cn.com.taiji.qtk.repo.jpa.ExchangeObuLogRepo;
+import cn.com.taiji.qtk.repo.jpa.FundSerialDetailRepo;
+import cn.com.taiji.qtk.repo.jpa.OBUInfoRepo;
+import cn.com.taiji.qtk.repo.jpa.VehicleInfoRepo;
+
+/**
+ * @ClassName RechargeManagerImpl
+ * @Description TODO
+ * @author yaonl
+ * @date 2018年06月25日 17:16:38
+ * @E_mail yaonanlin@163.com
+ */
+@Service
+public class ExchangeManagerImpl extends AbstractDsiCommManager implements ExchangeManager{
+
+	@Autowired
+	private OBUInfoRepo oBUInfoRepo;
+	@Autowired
+	private MaintenanceBinService maintenanceBinService;
+	@Autowired
+	private InqueryBinService inqueryBinService;
+	@Autowired
+	private ReplaceEquipmentManager replaceEquipmentManager;
+	@Autowired
+	private FundSerialDetaiManager fundSerialDetaiManager;
+	@Autowired
+	private StorageBinService storageBinService;
+	@Autowired
+	private VehicleInfoRepo veInfoRepo;
+	@Autowired
+	private ExchangeObuLogRepo exchangeObuLogRepo;
+	@Autowired
+	private FundSerialDetailRepo fundSerialDetailRepo;
+	
+	@Override
+	public LargePagination<OBUInfo> queryPage(ExchangeRequest queryModel,User user) throws ManagerException {
+		queryModel.validate();
+		if(null!=queryModel.getVehicleId()) {
+			List<OBUInfo> obuinfoList = oBUInfoRepo.listByVehicleId(queryModel.getVehicleId());
+			if(null!=obuinfoList&&obuinfoList.size()!=0) {
+				for(OBUInfo info:obuinfoList) {
+					doFullObuInfo(info.getObuId());
+				}
+			}
+		}else {
+			doFullObuInfo(queryModel.getObuId());
+		}
+		/*if(!user.getRole().isSystem()) {
+			OfflineinstallRequest offReq = new OfflineinstallRequest();
+			offReq.setObuId(queryModel.getObuId());
+			offReq.setVehicleId(queryModel.getVehicleId());
+			boolean queryFlag =queryCheck(queryModel,user);
+			if(!queryFlag) {
+				return null;
+			}
+		}*/
+		return oBUInfoRepo.largePage(queryModel);
+	}
+	public boolean queryCheck(ExchangeRequest queryModel,User user) throws ManagerException {
+		String agencyId=  user.getStaff().getServiceHall().getAgencyId();
+		OBUInfo  obuInfo = agencyCheck(queryModel);
+		if(null!=obuInfo) {
+			String obuAgencyId = obuInfo.getRegisteredChannelId().substring(0, 11);
+			if(!agencyId.equals(obuAgencyId)){
+				//建行要求
+				if("52010102018".equals(agencyId)&&"52010102002".equals(obuAgencyId)) {
+					return true;
+				}else if("52010102002".equals(agencyId)&&"52010102018".equals(obuAgencyId)) {
+					return true;
+				}else {
+					throw new ManagerException("该OBU不能在该渠道进行办理");
+				}
+			}else {
+				return true;
+			}
+		}
+		return false;
+		
+		
+	}
+	private OBUInfo agencyCheck(ExchangeRequest queryModel) throws ManagerException
+	{
+		OBUInfo obuInfo = null;
+		if(StringTools.hasText(queryModel.getObuId())&&!StringTools.hasText(queryModel.getVehicleId())) {
+			obuInfo = oBUInfoRepo.findByObuId(queryModel.getObuId());
+		}else if(!StringTools.hasText(queryModel.getObuId())&&StringTools.hasText(queryModel.getVehicleId())) {
+			 List<OBUInfo> list = oBUInfoRepo.listByVehicleId(queryModel.getVehicleId());
+			 if(list.size()!=0) {
+				 obuInfo = list.get(0);
+			 }
+		}else {
+			obuInfo = oBUInfoRepo.findByObuIdAndVehicleId(queryModel.getObuId(), queryModel.getVehicleId());
+		}
+		return obuInfo;
+		
+	}
+	@Override
+	public void VehicleInfoCheck(VehicleInfo vehicle) throws ManagerException {
+		if (vehicle.getType() != null) {
+			if (VehicleType.isCar(vehicle.getType())) {
+				if(vehicle.getApprovedCount() == null|| vehicle.getApprovedCount() < 1) {
+					throw new ManagerException("核定座位数有误，请先到：基础信息->车辆信息修改车辆信息。");
+				}
+			} else  if (VehicleType.isWeightCar(vehicle.getType())) {
+				if(vehicle.getPermittedWeight() == null || vehicle.getPermittedWeight() < 1) {
+					throw new ManagerException("核定载重有误，请先到：基础信息->车辆信息修改车辆信息。");
+				}
+			}
+		}else {
+			throw new ManagerException("车型有误，请先到：基础信息->车辆信息修改车辆信息。");
+		}
+		
+	}
+	@Override
+	public boolean VehicleInfoCheck(VehicleInfo vehicle, OBUStatusChangeResponse oBUChangeRes) throws ManagerException {
+		if (vehicle.getType() != null) {
+			if (VehicleType.isCar(vehicle.getType())) {
+				
+				if(vehicle.getApprovedCount() == null|| vehicle.getApprovedCount() < 1) {
+					oBUChangeRes.setStatus(0);
+					oBUChangeRes.setMessage("核定座位数有误，请先到：基础信息->车辆信息修改车辆信息。");
+					return false;
+				}
+			} else  if (VehicleType.isWeightCar(vehicle.getType())) {
+				if(vehicle.getPermittedWeight() == null || vehicle.getPermittedWeight() < 1) {
+					oBUChangeRes.setStatus(0);
+					oBUChangeRes.setMessage("核定载重有误，请先到：基础信息->车辆信息修改车辆信息。");
+					return false;
+				}
+			}
+			return true;
+		}else {
+			oBUChangeRes.setStatus(0);
+			oBUChangeRes.setMessage("车型有误，请先到：基础信息->车辆信息修改车辆信息。");
+			return false;
+		}
+	}
+	@Override
+	public OBUStatusChangeResponse doOBUExchange(ExchangeRequest queryModel, User loginUser) throws ManagerException {
+		
+		OBUInfo obuInfo = oBUInfoRepo.findByObuId(queryModel.getOldObuId());
+		VehicleInfo vehiInfo = veInfoRepo.findByVehicleId(obuInfo.getVehicleId());
+		OBUStatusChangeResponse oBUChangeRes = new OBUStatusChangeResponse();
+		//车辆信息校验
+	   	boolean veCheck = VehicleInfoCheck(vehiInfo,oBUChangeRes);
+	   	boolean cusCheck = customerAndVehicleCheck(obuInfo,oBUChangeRes);
+	   	//车辆信息与用户信息校验
+	   	if(!veCheck||!cusCheck) {
+	   		return oBUChangeRes;
+	   	}
+		try {
+			OBUInfoQueryResponse oBUInfoQueryRes= OBUInfoQuery(queryModel.getOldObuId(),loginUser);
+				if(oBUInfoQueryRes.getObuStatus()==4||oBUInfoQueryRes.getObuStatus()==5) {
+					oBUChangeRes.setStatus(0);
+					oBUChangeRes.setMessage("该OBU已注销");
+				}else {
+					if(null!=queryModel.getObuId()) {
+						InventoryCheckResponse invenRes = inventoryCheck(queryModel,loginUser);
+						if(!invenRes.isFlag()) {
+							oBUChangeRes.setMessage(invenRes.getMessage());
+							oBUChangeRes.setStatus(0);
+						}else {
+							oBUChangeRes =  oBUStatusChange(queryModel.getOldObuId(),loginUser,queryModel.getObuStatus());
+							//保存更换日志
+							saveExchangeLog(queryModel, loginUser);
+						}
+					}
+					
+				}
+				
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		return oBUChangeRes;
+	}
+	private void saveExchangeLog(ExchangeRequest queryModel, User loginUser) {
+		ExchangeObuLog exchangeObuLog = new ExchangeObuLog();
+		exchangeObuLog.setOldObuId(queryModel.getOldObuId());
+		exchangeObuLog.setNewObuId(queryModel.getObuId());
+		exchangeObuLog.setCreateTime(CssUtil.getNowDateTimeStrWithoutT());
+		exchangeObuLog.setHandleType(queryModel.getSupReason());
+		exchangeObuLog.setChannelId(loginUser.getStaff().getServiceHall().getServiceHallId());
+		exchangeObuLog.setStaffId(loginUser.getStaff().getStaffId());
+		exchangeObuLogRepo.save(exchangeObuLog);
+	}
+	private boolean customerAndVehicleCheck(OBUInfo obuInfo,OBUStatusChangeResponse oBUChangeRes) {
+		VehicleInfo veInfo = veInfoRepo.findByVehicleId(obuInfo.getVehicleId());
+		if(!veInfo.getCustomerId().equals(obuInfo.getCustomerId())) {
+			oBUChangeRes.setStatus(0);
+			oBUChangeRes.setMessage("该车辆不属于该用户");
+			return false;
+		}
+		return true;
+		
+	}
+	
+	private void jhAgency(CommQtkRequset req,String obuId,User user) {
+		OBUInfo oBUInfo = oBUInfoRepo.findByObuId(obuId);
+		String agencyId=  user.getStaff().getServiceHall().getAgencyId();
+		if(null!=oBUInfo) {
+			String obuAgencyId = oBUInfo.getRegisteredChannelId().substring(0, 11);
+				if("52010102018".equals(agencyId)&&"52010102002".equals(obuAgencyId)) {
+					req.setAgentId(obuAgencyId);
+				}else if("52010102002".equals(agencyId)&&"52010102018".equals(obuAgencyId)) {
+					req.setAgentId(obuAgencyId);
+				}
+		}	
+	}
+	private OBUInfoQueryResponse OBUInfoQuery(String obuId,User user) throws ManagerException {
+		
+		OBUInfoQueryRequest oBUInfoQueryReq = new OBUInfoQueryRequest();
+		OBUInfoQueryResponse oBUInfoQueryRes = new OBUInfoQueryResponse();
+		super.commSet(oBUInfoQueryReq,user);
+		oBUInfoQueryReq.setObuId(obuId);
+		
+		try {
+			oBUInfoQueryRes = inqueryBinService.obuInfoQuery(oBUInfoQueryReq);
+		} catch (Exception e) {
+			
+			e.printStackTrace();
+			throw new ManagerException("OBU信息查询失败。");
+		}
+		
+		return oBUInfoQueryRes;
+		
+	}
+
+	private OBUStatusChangeResponse oBUStatusChange(String obuId, User user,Integer obuStatus) throws IOException {
+		//数据校验
+		OBUInfo oBUInfo = findById(obuId);
+		if(null==oBUInfo.getRegisteredTime()||oBUInfo.getRegisteredTime().equals("")) {
+			DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss");
+			LocalDateTime now = LocalDateTime.now();
+			oBUInfo.setRegisteredTime(format.format(now));
+			oBUInfoRepo.save(oBUInfo);
+		}
+		
+		OBUStatusChangeRequest oBUStatusChangeReq= new OBUStatusChangeRequest();
+		OBUStatusChangeResponse oBUChangeRes = new OBUStatusChangeResponse();
+		oBUStatusChangeReq.setStatus(obuStatus);
+		oBUStatusChangeReq.setObuId(obuId);
+		super.commSet(oBUStatusChangeReq,user);
+		jhAgency(oBUStatusChangeReq,obuId,user);
+		oBUChangeRes = maintenanceBinService.obuStatusChange(oBUStatusChangeReq);
+		return oBUChangeRes;
+	}
+
+	@Override
+	public OBUInfo findById(String obuId) {
+		return oBUInfoRepo.findByObuId(obuId);
+	}
+	@Override //设备费
+	public long obuRefund(User user,String newObuId) {
+		List<ReplaceEquipmentCostDetail> recdList = replaceEquipmentManager.findReplaceEquipment(user);
+		double cardCost = recdList.get(0).getObuCost();
+		long count = fundSerialDetailRepo.countByByObuId(newObuId);
+		try {
+			if(count==0) {
+				fundSerialDetaiManager.saveFundSerial(user, ServiceType.OBUREPLACE, ChargeType.COMMONPOS,0, (long)cardCost*100,null,newObuId,null);
+			}
+		} catch (ManagerException e) {
+			e.printStackTrace();
+		}
+		return (long)cardCost;
+	}
+	private InventoryCheckResponse inventoryCheck(ExchangeRequest queryModel,User user) {
+		InventoryCheckRequest invenReq = new InventoryCheckRequest();
+		super.commSet(invenReq,user);
+		invenReq.setObuId(queryModel.getObuId());
+		invenReq.setType(2);
+		invenReq.setServiceHallId(user.getStaff().getServiceHallId());
+		InventoryCheckResponse invenRes = null;
+		
+		OBUInfo oBUInfo = oBUInfoRepo.findByObuId(queryModel.getOldObuId());
+		String agencyId=  user.getStaff().getServiceHall().getAgencyId();
+		if(null!=oBUInfo) {
+			String obuAgencyId = oBUInfo.getRegisteredChannelId().substring(0, 11);
+				if("52010102018".equals(agencyId)&&"52010102002".equals(obuAgencyId)) {
+					invenReq.setServiceHallId(oBUInfo.getRegisteredChannelId());
+				}else if("52010102002".equals(agencyId)&&"52010102018".equals(obuAgencyId)) {
+					invenReq.setServiceHallId(oBUInfo.getRegisteredChannelId());
+				}
+		}
+		
+		try {
+			invenRes = storageBinService.inventoryCheck(invenReq);
+		} catch (ApiRequestException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return invenRes;
+	}
+	
+	@Override
+	public void doFullObuInfo(String obuId) {
+		OBUInfo oBUInfo = oBUInfoRepo.findByObuId(obuId);
+		if(null!=oBUInfo) {
+			if(null==oBUInfo.getBrand()) {
+				oBUInfo.setBrand(1);
+			}
+			if(null==oBUInfo.getModel()) {
+				oBUInfo.setModel("0");
+			}
+			if(null==oBUInfo.getEnableTime()) {
+				oBUInfo.setEnableTime(oBUInfo.getRegisteredTime());
+			}else if(oBUInfo.getEnableTime().length()==10) {
+				oBUInfo.setEnableTime(oBUInfo.getEnableTime()+"T12:00:00");
+			}
+			if(null==oBUInfo.getRegisteredTime()) {
+				oBUInfo.setRegisteredTime(oBUInfo.getEnableTime());
+			}else if(oBUInfo.getRegisteredTime().length()==10) {
+				oBUInfo.setRegisteredTime(oBUInfo.getRegisteredTime()+"T12:00:00");
+			}
+			if(null==oBUInfo.getInstallType()&&null==oBUInfo.getInstallChannelId()) {
+				oBUInfo.setInstallType(1);
+				oBUInfo.setInstallChannelId("0");
+			}else if(oBUInfo.getInstallType()==1&&(oBUInfo.getInstallChannelId().length()>1)) {
+				oBUInfo.setInstallType(2);
+			}
+			if(null==oBUInfo.getInstallTime()) {
+				oBUInfo.setInstallTime(oBUInfo.getRegisteredTime());
+			}
+			if(null==oBUInfo.getStatusChangeTime()) {
+				oBUInfo.setStatusChangeTime(oBUInfo.getRegisteredTime());
+			}
+			oBUInfoRepo.save(oBUInfo);
+		}
+	}
+}	
+

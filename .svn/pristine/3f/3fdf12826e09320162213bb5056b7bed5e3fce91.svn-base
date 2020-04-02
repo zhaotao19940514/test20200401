@@ -1,0 +1,47 @@
+package cn.com.taiji.css.web;
+
+import java.io.IOException;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import cn.com.taiji.common.web.util.WebTools;
+import cn.com.taiji.css.manager.VerifyImage;
+import cn.com.taiji.css.model.MySessionNames;
+
+@Controller
+public class CodeController  extends MyBaseController
+{
+	
+
+	/**
+	 * 获取验证码
+	 * 
+	 * @param request
+	 * @param response
+	 */
+	@RequestMapping(value = "/common/validCodeImage.html")
+	public void getValidCode(HttpServletRequest request, HttpServletResponse response)
+	{
+		// 设置响应的类型格式为图片格式
+		response.setContentType("image/jpeg");
+		// 禁止图像缓存。
+		response.setHeader("Pragma", "no-cache");
+		response.setHeader("Cache-Control", "no-cache");
+		response.setDateHeader("Expires", 0);
+		VerifyImage  vimage=new VerifyImage();
+		WebTools.setSessionAttribute(request, MySessionNames.VALID_CODE, vimage.getVerifyCode());
+		try
+		{
+			vimage.write(response.getOutputStream());
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	
+}

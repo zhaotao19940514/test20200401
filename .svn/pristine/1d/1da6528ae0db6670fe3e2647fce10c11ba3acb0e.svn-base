@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src/web"/>
+	<classpathentry kind="src" path="src/manager"/>
+	<classpathentry kind="src" path="src/dao"/>
+	<classpathentry kind="src" path="test/web"/>
+	<classpathentry kind="src" path="test/manager"/>
+	<classpathentry kind="src" path="test/dao"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/TJLib/lib/antlr/2.7/antlr-2.7.7.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/apache/commons/lang/3.6/commons-lang3-3.6.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/apache-commons/codec/1.10/commons-codec-1.10.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/apache-commons/logging/1.2/commons-logging-1.2.jar" sourcepath="/TJLib/lib/apache-commons/logging/1.2/commons-logging-1.2-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/javassist/3.21/javassist-3.21.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/aspectj/1.8/aspectjrt-1.8.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/aspectj/1.8/aspectjweaver-1.8.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/alibaba/druid/1.1/druid-1.1.jar" sourcepath="/TJLib/lib/alibaba/druid/1.1/druid-1.1-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/standard-taglib/1.2/taglibs-standard-compat-1.2.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/standard-taglib/1.2/taglibs-standard-impl-1.2.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/standard-taglib/1.2/taglibs-standard-jstlel-1.2.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/standard-taglib/1.2/taglibs-standard-spec-1.2.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/jboss/logging/3.3/jboss-logging-3.3.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/hibernate/validator/5.2/hibernate-validator-5.2.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/j2ee/validation-api/2.0/validation-api-2.0.jar" sourcepath="/TJLib/lib/j2ee/validation/1.1/validation-api-1.1.0.Final-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/spring/5.0/spring-aop-5.0.jar" sourcepath="/TJLib/lib/spring/5.0/spring-aop-5.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/spring/5.0/spring-aspects-5.0.jar" sourcepath="/TJLib/lib/spring/5.0/spring-aspects-5.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/spring/5.0/spring-beans-5.0.jar" sourcepath="/TJLib/lib/spring/5.0/spring-beans-5.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/spring/5.0/spring-context-5.0.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/spring/5.0/spring-context-support-5.0.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/spring/5.0/spring-core-5.0.jar" sourcepath="/TJLib/lib/spring/5.0/spring-core-5.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/spring/5.0/spring-expression-5.0.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/spring/5.0/spring-jdbc-5.0.jar" sourcepath="/TJLib/lib/spring/5.0/spring-jdbc-5.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/spring/5.0/spring-jms-5.0.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/spring/5.0/spring-orm-5.0.jar" sourcepath="/TJLib/lib/spring/5.0/spring-orm-5.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/spring/5.0/spring-test-5.0.jar" sourcepath="/TJLib/lib/spring/5.0/spring-test-5.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/spring/5.0/spring-tx-5.0.jar" sourcepath="/TJLib/lib/spring/5.0/spring-tx-5.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/spring/5.0/spring-web-5.0.jar" sourcepath="/TJLib/lib/spring/5.0/spring-web-5.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/spring/5.0/spring-webmvc-5.0.jar" sourcepath="/TJLib/lib/spring/5.0/spring-webmvc-5.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/j2ee/cache/cache-api-1.0.0.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/slf4j/1.7/slf4j-api-1.7.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/j2ee/el/3.0/javax.el-api-3.0.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/j2ee/transaction/1.2/javax.transaction-api-1.2.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/hibernate/jpa/2.1/hibernate-jpa-2.1-api-1.0.jar" sourcepath="/TJLib/lib/hibernate/jpa/2.1/hibernate-jpa-2.1-api-1.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/hamcrest/2.0/java-hamcrest-2.0.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/xstream/1.4/xstream-1.4.jar" sourcepath="/TJLib/lib/xstream/1.4/xstream-1.4-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/google/guava/23.1/guava-23.1.jar" sourcepath="/TJLib/lib/google/guava/19.0/guava-19.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/fasterxml/classmate/1.3/classmate-1.3.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/apache/commons/collections/4.1/commons-collections4-4.1.jar" sourcepath="/TJLib/lib/apache/commons/collections/4.1/commons-collections4-4.1-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/apache/commons/io/2.5/commons-io-2.5.jar" sourcepath="/TJLib/lib/apache/commons/io/2.5/commons-io-2.5-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/dom4j/2.1/dom4j-2.1.jar" sourcepath="/TJLib/lib/dom4j/2.0/dom4j-2.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/runtime/jsp/2.3/javax.servlet.jsp-api-2.3.jar" sourcepath="/TJLib/lib/runtime/jsp/2.3/javax.servlet.jsp-api-2.3-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/runtime/servlet/3.1/javax.servlet-api-3.1.jar" sourcepath="/TJLib/lib/runtime/servlet/3.1/javax.servlet-api-3.1-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/hibernate/5.2/hibernate-core-5.2.jar" sourcepath="/TJLib/lib/hibernate/5.2/hibernate-core-5.2-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/hibernate/common/5.0/hibernate-commons-annotations-5.0.jar" sourcepath="/TJLib/lib/hibernate/common/5.0/hibernate-commons-annotations-5.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/jboss/jandex/2.0/jandex-2.0.jar" sourcepath="/TJLib/lib/jboss/jandex/2.0/jandex-2.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/sargue/1.1/java-time-jsptags-1.1.jar" sourcepath="/TJLib/lib/sargue/1.1/java-time-jsptags-1.1-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/hsqldb/2.4/hsqldb-2.4.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/apache/poi/3.17/poi-3.17.jar" sourcepath="/TJLib/lib/apache/poi/3.17/poi-3.17-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/apache/poi/3.17/poi-ooxml-3.17.jar" sourcepath="/TJLib/lib/apache/poi/3.17/poi-ooxml-3.17-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/apache/poi/3.17/poi-ooxml-schemas-3.17.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/apache/httpcomponents/client/4.5/httpclient-4.5.jar" sourcepath="/TJLib/lib/apache/httpcomponents/client/4.5/httpclient-4.5-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/apache/httpcomponents/client/4.5/httpmime-4.5.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/apache/httpcomponents/core/4.4/httpcore-4.4.jar" sourcepath="/TJLib/lib/apache/httpcomponents/core/4.4/httpcore-4.4-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/fasterxml/jackson/2.9/jackson-annotations-2.9.jar" sourcepath="/TJLib/lib/fasterxml/jackson/2.9/jackson-annotations-2.9-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/fasterxml/jackson/2.9/jackson-core-2.9.jar" sourcepath="/TJLib/lib/fasterxml/jackson/2.9/jackson-core-2.9-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/fasterxml/jackson/2.9/jackson-databind-2.9.jar" sourcepath="/TJLib/lib/fasterxml/jackson/2.9/jackson-databind-2.9-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/fasterxml/jackson/datatype/2.9/jackson-datatype-jsr310-2.9.jar" sourcepath="/TJLib/lib/fasterxml/jackson/datatype/2.9/jackson-datatype-jsr310-2.9-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/apache/log4j/2.9/log4j-api-2.9.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/apache/log4j/2.9/log4j-core-2.9.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/apache/log4j/2.9/log4j-slf4j-impl-2.9.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/apache/log4j/2.9/log4j-web-2.9.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/stuxuhai/jpinyin/1.1/jpinyin-1.1.jar" sourcepath="/TJLib/lib/stuxuhai/jpinyin/1.1/jpinyin-1.1-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/taiji/common/5.0/tj-common-aspectj-5.0.jar" sourcepath="/TJLib/lib/taiji/common/5.0/tj-common-5.0-src.zip"/>
+	<classpathentry kind="lib" path="/TJLib/lib/spring/data/commons/2.0/spring-data-commons-2.0.jar" sourcepath="/TJLib/lib/spring/data/commons/2.0/spring-data-commons-2.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/spring/data/jpa/2.0/spring-data-jpa-2.0.jar" sourcepath="/TJLib/lib/spring/data/jpa/2.0/spring-data-jpa-2.0-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/apache-xmlbeans/2.6/xmlbeans-2.6.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/oracle/ojdbc7.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/taiji/etc/tc/sso-fileprotocol-1.0.jar" sourcepath="/TJLib/lib/taiji/etc/tc/sso-fileprotocol-1.0-src.zip"/>
+	<classpathentry kind="lib" path="/TJLib/lib/freemarker/2.3/freemarker-2.3.jar" sourcepath="/TJLib/lib/freemarker/2.3/freemarker-2.3-sources.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/taiji/etc/dsi-fileprotocol-1.0.jar" sourcepath="/ETC.qtk.dsi"/>
+	<classpathentry kind="lib" path="/TJLib/lib/taiji/etc/qtk_nondsi.jar" sourcepath="/ETC.qtk.core"/>
+	<classpathentry kind="lib" path="/TJLib/lib/taiji/etc/fastjson-1.2.47.jar"/>
+	<classpathentry kind="lib" path="/TJLib/lib/runtime/junit/4.12/junit-4.12.jar"/>
+	<classpathentry kind="output" path="war/WEB-INF/classes"/>
+</classpath>

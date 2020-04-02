@@ -1,0 +1,172 @@
+/**
+ * @Title RechargeManagerImpl.java
+ * @Package cn.com.taiji.css.manager.customerservice.finance
+ * @Description TODO
+ * @author yaonanlin
+ * @date 2018年6月25日 下午5:16:38
+ * @version V1.0
+ */
+package cn.com.taiji.css.manager.customerservice.card;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.common.model.dao.LargePagination;
+import cn.com.taiji.common.pub.StringTools;
+import cn.com.taiji.css.entity.User;
+import cn.com.taiji.css.manager.abstractmanager.AbstractDsiCommManager;
+import cn.com.taiji.css.manager.administration.agency.AgencyVarifyManager;
+import cn.com.taiji.css.model.customerservice.card.HangRequest;
+import cn.com.taiji.dsi.manager.comm.client.InqueryBinService;
+import cn.com.taiji.dsi.manager.comm.client.MaintenanceBinService;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.CardInfoQueryRequest;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.CardInfoQueryResponse;
+import cn.com.taiji.dsi.model.comm.protocol.maintenance.CardStatusChangeRequest;
+import cn.com.taiji.dsi.model.comm.protocol.maintenance.CardStatusChangeResponse;
+import cn.com.taiji.qtk.entity.BlackCard;
+import cn.com.taiji.qtk.entity.CardInfo;
+import cn.com.taiji.qtk.repo.jpa.BlackCardRepo;
+import cn.com.taiji.qtk.repo.jpa.CardInfoRepo;
+
+/**
+ * @ClassName HangManagerImpl.java
+ * @author zhaotao
+ * @Description 
+ * @date2018年12月24日
+ */
+@Service
+public class HangManagerImpl extends AbstractDsiCommManager implements HangManager{
+
+	/* (non-Javadoc)
+	 * @see cn.com.taiji.css.manager.customerservice.finance.RechargeManager#queryPage(cn.com.taiji.css.model.customerservice.finance.RechargeRequest)
+	 */
+	@Autowired
+	private CardInfoRepo cardInfoRepo;
+	@Autowired
+	private MaintenanceBinService maintenanceBinService;
+	@Autowired
+	private InqueryBinService inqueryBinService;
+	@Autowired
+	private BlackCardRepo blackCardRepo;
+	@Autowired
+	private AgencyVarifyManager agencyVarifyManager;
+	
+	@Override
+	public LargePagination<CardInfo> queryPage(HangRequest queryModel,User user) throws ManagerException {
+		queryModel.validate();
+		List<CardInfo> listCard = new ArrayList<CardInfo>();
+		listCard = agencyCheck(queryModel,user);
+		LargePagination<CardInfo> list = new LargePagination<CardInfo>();
+		if(listCard.size()==0) {
+			list=null;
+		}else {
+			list.setResult(listCard);
+		}
+		return list;
+	}
+	private List<CardInfo> agencyCheck(HangRequest queryModel, User user) throws ManagerException {
+		List<CardInfo> listCard = new ArrayList<CardInfo>();
+		CardInfo cardInfo = null;
+		if (StringTools.hasText(queryModel.getCardId())) {
+			cardInfo = cardInfoRepo.findByCardId(queryModel.getCardId());
+			boolean falg =false;
+			try {
+				falg = agencyVarifyManager.varifyAgency(user, cardInfo);
+			} catch (Exception e) {
+				e.printStackTrace();
+				throw new ManagerException("渠道校验失败："+e.getMessage());
+			}
+			if(falg) {
+				if(null!=cardInfo) {
+					listCard.add(cardInfo);
+				}
+			}else {
+				throw new ManagerException("当前渠道无权操作此卡");
+			}
+			
+		}else if (StringTools.hasText(queryModel.getVehicleId())) {
+			List<CardInfo> cardList = cardInfoRepo.listByVehicleId(queryModel.getVehicleId());
+			if(cardList.size()>0) {
+				boolean falg =false;
+				for(CardInfo info:cardList) {
+					try {
+						falg = agencyVarifyManager.varifyAgency(user, info);
+					} catch (Exception e) {
+						e.printStackTrace();
+						throw new ManagerException("渠道校验失败："+e.getMessage());
+					}
+					if(falg) {
+						listCard.add(info);
+					}
+				}
+				if(listCard.size()==0) {
+					throw new ManagerException("当前渠道无权操作此卡");
+				}
+			}
+			
+		}
+		return listCard;
+
+	}
+	@Override
+	public CardStatusChangeResponse doHangCard(HangRequest queryModel, User user) throws Exception{
+		
+		CardInfoQueryRequest cardInfoQueryRequest =  new CardInfoQueryRequest();
+		CardInfoQueryResponse cardInfoQueryResponse =new CardInfoQueryResponse();
+		super.commSet(cardInfoQueryRequest,user);
+		cardInfoQueryRequest.setCardId(queryModel.getCardId());
+		
+		CardStatusChangeRequest cardStatusChangeRequest = new CardStatusChangeRequest();
+		CardStatusChangeResponse cardStatusChangeResponse = new CardStatusChangeResponse();
+		super.commSet(cardStatusChangeRequest,user);
+		cardStatusChangeRequest.setCardId(queryModel.getCardId());
+		cardStatusChangeRequest.setStatus(3);
+		
+		List<BlackCard> blackCardType_4 = blackCardRepo.listCardBlack(queryModel.getCardId(),4);
+		List<BlackCard> blackCardType_6 = blackCardRepo.listCardBlack(queryModel.getCardId(),6);
+		if(null!=blackCardType_4&&blackCardType_4.size()!=0) {
+			cardStatusChangeResponse.setStatus(999);
+			cardStatusChangeResponse.setMessage("该卡已下发黑名单,黑名单类型为【账户透支】。不能挂起");
+			return cardStatusChangeResponse;
+		}else if(null!=blackCardType_6&&blackCardType_6.size()!=0) {
+			cardStatusChangeResponse.setStatus(999);
+			cardStatusChangeResponse.setMessage("该卡已下发黑名单,黑名单类型为【车型不符】。不能挂起");
+			return cardStatusChangeResponse;
+		}
+		if(queryModel.getProvider()==1) {
+			cardStatusChangeRequest.setStatus(2);
+		}
+		try {
+			cardInfoQueryResponse = inqueryBinService.cardInfoQuery(cardInfoQueryRequest);
+		} catch (Exception e) {
+			cardStatusChangeResponse.setStatus(0);
+			cardStatusChangeResponse.setMessage("接口调用失败,请联系管理员.");
+			return cardStatusChangeResponse;
+		}
+			if(cardInfoQueryResponse.getStatus()==1) {
+				int status = cardInfoQueryResponse.getCardStatus();
+				//判断卡状态是否为“正常=1”、“无卡挂起=3”、“有卡挂起=2”
+					if(status==1||status==6) {
+						cardStatusChangeResponse =  maintenanceBinService.cardStatusChange(cardStatusChangeRequest);
+					}else {
+						cardStatusChangeResponse.setMessage("此卡不能办理挂起业务,正常或挂失状态才能办理挂起。");
+					}
+			}else {
+				cardStatusChangeResponse.setMessage("未查询到该卡信息,请检查此卡是否已开卡。");
+			}
+			
+			return cardStatusChangeResponse;
+	}
+
+	@Override
+	public CardInfo findById(String cardId) {
+		// TODO Auto-generated method stub
+		return cardInfoRepo.findByCardId(cardId);
+	}
+
+}
+

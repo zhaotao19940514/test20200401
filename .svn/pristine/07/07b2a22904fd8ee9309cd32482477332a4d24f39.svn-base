@@ -1,0 +1,290 @@
+/**
+ * @Title RechargeManagerImpl.java
+ * @Package cn.com.taiji.css.manager.customerservice.finance
+ * @Description TODO
+ * @author yaonanlin
+ * @date 2018年6月25日 下午5:16:38
+ * @version V1.0
+ */
+package cn.com.taiji.css.manager.customerservice.card;
+
+
+import java.io.File;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+
+import org.apache.poi.hssf.usermodel.HSSFCell;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFRow;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
+
+import com.google.common.collect.Lists;
+
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.common.model.dao.LargePagination;
+import cn.com.taiji.common.pub.EncodeTool;
+import cn.com.taiji.css.entity.User;
+import cn.com.taiji.css.manager.abstractmanager.AbstractDsiCommManager;
+import cn.com.taiji.css.model.appajax.AppAjaxResponse;
+import cn.com.taiji.css.model.customerservice.card.CancelRefundRequest;
+import cn.com.taiji.css.model.customerservice.card.PreCancelRequest;
+import cn.com.taiji.qtk.entity.AccountCardBalanceOperate;
+import cn.com.taiji.qtk.entity.AccountRefundDetail;
+import cn.com.taiji.qtk.entity.CardCancelRefund;
+import cn.com.taiji.qtk.entity.CustomerInfo;
+import cn.com.taiji.qtk.entity.dict.RefundDetailType;
+import cn.com.taiji.qtk.repo.jpa.AccountCardBalanceOperateRepo;
+import cn.com.taiji.qtk.repo.jpa.AccountRefundDetailRepo;
+import cn.com.taiji.qtk.repo.jpa.CardCancelRefundRepo;
+import cn.com.taiji.qtk.repo.jpa.CardInfoRepo;
+import cn.com.taiji.qtk.repo.jpa.CustomerInfoRepo;
+
+/**
+ * @ClassName CancelRefundManagerImpl.java
+ * @author zhaotao
+ * @Description 
+ * @date2018年11月12日
+ */
+@Service
+public class CancelRefundManagerImpl extends AbstractDsiCommManager implements CancelRefundManager{
+
+	@Autowired
+	private CardCancelRefundRepo cardCancelRefundRepo;
+	@Autowired
+	private AccountRefundDetailRepo accRepo;
+	@Autowired
+	private ManCancelManager manCancelManager;
+	@Autowired
+	private CustomerInfoRepo cusRepo;
+	@Autowired
+	private AccountCardBalanceOperateRepo accountCardBalanceOperateRepo;
+	@Autowired
+	private CardInfoRepo  cardRepo;
+
+	@Override
+	public LargePagination<CardCancelRefund> queryPage(CancelRefundRequest queryModel,User user) throws ManagerException {
+		queryModel.validate();
+		LargePagination<CardCancelRefund> largeList = cardCancelRefundRepo.largePage(queryModel);
+		List<CardCancelRefund> listRefund = largeList.getResult();
+		List<CardCancelRefund> listResult= Lists.newArrayList();
+		if(null!=listRefund&&listRefund.size()!=0) {
+			for(CardCancelRefund refund:listRefund) {
+				boolean cancel30 = manCancelManager.cancel30ArgueTime(refund.getCardId());
+				if(!cancel30) {
+					refund.setRefundType(RefundDetailType.WGZYQ);
+				}
+				listResult.add(refund);
+			}
+			largeList.setResult(listResult);
+		}
+		return largeList;
+	}
+
+
+	@Override
+	public void exportExcel(@Valid CancelRefundRequest queryModel,HttpServletRequest request,HttpServletResponse response) {
+		HSSFWorkbook wb = new HSSFWorkbook(); 
+		String wbname = "银行卡信息";
+		HSSFSheet sheet = wb.createSheet(wbname); 
+		HSSFRow row = sheet.createRow((int) 0);
+		createSheet1(sheet,wb,row,queryModel);
+		OutputStream out = null;
+		
+		try
+		{
+			response.reset();
+            out = response.getOutputStream();
+			response.setContentType("application/x-download;charset=UTF-8");
+            String fileName = "export";
+            String title = queryModel.getBeforeDate()+"_"+queryModel.getAfterDate()+"_银行卡号";
+            fileName = java.net.URLEncoder.encode(title, "UTF-8");
+            response.addHeader("Content-Disposition", "attachment;filename=" + fileName + ".xls");
+            wb.write(out);
+            out.flush();
+            out.close();
+		}catch (Exception e){
+			e.printStackTrace();
+		}finally{
+			if (out != null) {
+				try {
+					out.flush();
+					out.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				
+			}
+		}
+	}
+	private static CellStyle getTitleCellStyle(HSSFWorkbook wb){
+	    CellStyle titleStyle = wb.createCellStyle();
+	    HSSFFont titleFont = wb.createFont();
+	    titleFont.setFontHeight((short) 400);
+	    titleFont.setFontHeightInPoints((short)12);
+	    titleStyle.setAlignment(HorizontalAlignment.CENTER);
+	    titleStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+	    titleStyle.setFont(titleFont);
+	    return titleStyle;
+	}
+	private void createSheet1(HSSFSheet sheet,HSSFWorkbook wb,HSSFRow row,CancelRefundRequest queryModel){
+		CellStyle cellStyle =  getTitleCellStyle(wb);
+		HSSFCell cell = row.createCell(0);
+		cell = row.createCell(0);
+		cell.setCellValue("卡号");
+		cell.setCellStyle(cellStyle);
+		cell = row.createCell(1);
+		cell.setCellValue("银行卡号");
+		cell.setCellStyle(cellStyle);
+		cell = row.createCell(2);
+		cell.setCellValue("卡内余额(元)");
+		cell.setCellStyle(cellStyle);
+		cell = row.createCell(3);
+		cell.setCellValue("创建时间");
+		cell.setCellStyle(cellStyle);
+		cell = row.createCell(4);
+		cell.setCellValue("渠道编号");
+		cell.setCellStyle(cellStyle);
+		cell = row.createCell(5);
+		cell.setCellValue("工号");
+		cell.setCellStyle(cellStyle);
+		
+        sheet.setColumnWidth(0, 6000);
+        sheet.setColumnWidth(1, 8000);
+        sheet.setColumnWidth(2, 4000);
+        sheet.setColumnWidth(3, 5000);
+        sheet.setColumnWidth(4, 5000);
+        sheet.setColumnWidth(5, 10000);
+		List<CardCancelRefund> list = null;
+		if(StringUtils.hasText(queryModel.getCardId())) {
+			list = cardCancelRefundRepo.listByCardIdAndTime(queryModel.getCardId(), queryModel.getBeforeDate(), queryModel.getAfterDate());
+		}else {
+			list = cardCancelRefundRepo.listByTime(queryModel.getBeforeDate(), queryModel.getAfterDate());
+		}
+		int rowCount = 1;
+		for(CardCancelRefund li:list) {
+			row = sheet.createRow(rowCount);
+			row.createCell(0).setCellValue(li.getCardId());
+			row.createCell(1).setCellValue(li.getBankCardId());
+//			row.createCell(2).setCellValue(li.getAccountBalance().doubleValue()/100);
+//			row.createCell(3).setCellValue(li.getCreateTime());
+//			row.createCell(4).setCellValue(li.getChannelId());
+//			row.createCell(5).setCellValue(li.getStaffId());
+			rowCount++;
+		}
+	}
+
+
+	@Override
+	public CardCancelRefund findOne(String cardId) {
+		//补充用户信息
+		AccountCardBalanceOperate  oprt = accountCardBalanceOperateRepo.findByCardId(cardId);
+		if(null!=oprt&&null==oprt.getCusType()) {
+			CustomerInfo cusInfo = cusRepo.findByCustomerId(cardRepo.findByCardId(cardId).getCustomerId());
+			oprt.setCusType(cusInfo.getCustomerType());
+			accountCardBalanceOperateRepo.save(oprt);
+		}
+		return cardCancelRefundRepo.findByCardId(cardId);
+	}
+
+
+	@Override
+	public List<String> getScreenShotBase64(CardCancelRefund refund,HttpServletRequest request) throws ManagerException {
+		
+		List<String> listq = Lists.newArrayList();
+		CardCancelRefund cardCancelRefund = refund;
+		String fileName = cardCancelRefund.getFileName();
+		String filePath = cardCancelRefund.getFilePath();
+		if(fileName == null || filePath == null){
+			throw new ManagerException("未查到图片信息");
+		}
+		String url = request.getSession().getServletContext().getRealPath("") ;
+		String[] fileLength = fileName.split(";");
+		for(String str:fileLength) {
+			File file = new File(url+"data"+File.separator+filePath +File.separator+str);
+			String encodeBase64="";
+			try {
+				encodeBase64 = EncodeTool.encodeBase64(file);
+			} catch (IOException e) {
+				e.printStackTrace();
+				throw new ManagerException("图片转码错误！");
+			}
+			String suffix = str.substring(str.lastIndexOf('.'));
+			if(".png".equalsIgnoreCase(suffix)){encodeBase64 = "data:image/png;base64,"+encodeBase64;}
+			else if(".jpg".equalsIgnoreCase(suffix)){encodeBase64 ="data:image/jpg;base64,"+encodeBase64;}
+			else if(".jpeg".equalsIgnoreCase(suffix)){encodeBase64 ="data:image/jpeg;base64,"+encodeBase64;}
+			listq.add(encodeBase64);
+		}
+		
+		return listq;
+	}
+	@Override
+	public AppAjaxResponse updateCancelData(@Valid PreCancelRequest queryModel) {
+		AccountCardBalanceOperate accOprt = accountCardBalanceOperateRepo.findByCardId(queryModel.getCardId());
+		AccountRefundDetail accountRefundDetail = accRepo.findByCardId(queryModel.getCardId());
+		AppAjaxResponse response = new AppAjaxResponse();
+		if(null!=accOprt) {
+		}
+		accOprt.setBankCardId(queryModel.getBankCardId());
+		accOprt.setBankType(queryModel.getBankType());
+		accOprt.setCusName(queryModel.getCusName());
+		accOprt.setCusTel(queryModel.getCusTel());
+		accOprt.setProvince(queryModel.getProvince());
+		accOprt.setSell(queryModel.getSell());
+		try {
+			accountCardBalanceOperateRepo.save(accOprt);
+			if(null!=accountRefundDetail) {
+				if(accountRefundDetail.getRefundType().equals(RefundDetailType.RFFL)) {
+					accountRefundDetail.setRefundType(RefundDetailType.GLYQR);
+				}
+				accRepo.save(accountRefundDetail);
+			}
+			response.setStatus(1);
+			response.setMessage("修改成功");
+			return response;
+		} catch (Exception e) {
+			response.setStatus(0);
+			response.setMessage("修改失败");
+		}
+		return response;
+	}
+
+
+	@Override
+	public CustomerInfo findbyCustomerId(String customerId) {
+		
+		return cusRepo.findByCustomerId(customerId);
+	}
+
+
+	@Override
+	public AppAjaxResponse attachConfirm(String cardId,Integer attachStatus) {
+		AppAjaxResponse response = new AppAjaxResponse();
+		AccountCardBalanceOperate accOprt = accountCardBalanceOperateRepo.findByCardId(cardId);
+		accOprt.setAttachStatus(attachStatus);
+		try {
+			accountCardBalanceOperateRepo.save(accOprt);
+			response.setStatus(1);
+			response.setMessage("修改成功");
+			return response;
+		} catch (Exception e) {
+			response.setStatus(0);
+			response.setMessage("修改失败");
+		}
+		return response;
+	}
+
+	
+}
+

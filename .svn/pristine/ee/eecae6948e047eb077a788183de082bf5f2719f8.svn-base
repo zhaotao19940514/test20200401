@@ -1,0 +1,387 @@
+
+@media (max-width: 980px) {
+.form-horizontal.form-bordered .form-group {
+    border-bottom: 1px solid #eee;
+}
+.form-horizontal.form-bordered .form-group > .control-label {
+    padding: 15px 15px 5px;
+}
+.form-horizontal.form-bordered .form-group > div {
+    padding: 5px 15px 15px;
+}
+.form-horizontal.form-bordered .form-group > .control-label, .form-horizontal.form-bordered .form-group > div {
+    border: medium none;
+}
+.result-list .result-image, .result-list .result-price {
+    width: 200px;
+}
+.gallery .image {
+    width: 33%;
+}
+}
+@media (max-width: 767px) {
+body {
+    padding-top: 0 !important;
+}
+.page-with-right-sidebar .sidebar {
+    left: auto;
+    right: -220px;
+}
+.page-with-right-sidebar .content {
+    margin-right: 0;
+}
+.page-with-right-sidebar .footer {
+    margin-right: 20px;
+}
+.content, .sidebar-minifed .content {
+    margin-left: 0 !important;
+}
+.content.content-full-width .breadcrumb {
+    margin: 20px;
+}
+.navbar.navbar-fixed-top {
+    margin: 0;
+    position: relative;
+}
+.navbar-brand {
+    width: auto;
+}
+.navbar-header {
+    border-bottom: 1px solid #eee;
+}
+.navbar-nav {
+    margin: 0;
+}
+.navbar-right {
+    float: right;
+}
+.navbar-left, .navbar-nav > li {
+    float: left;
+}
+.navbar-form {
+    border: medium none;
+    margin: 0;
+    padding: 12px 10px;
+}
+.navbar-form .btn-search {
+    right: 10px;
+}
+.navbar-form .form-group {
+    margin: 0;
+}
+.navbar-form .form-control, .navbar-form .form-control:focus {
+    animation: 0s ease 0s normal none 1 running none !important;
+    margin: 0;
+    width: 200px !important;
+}
+.navbar-nav .open .dropdown-menu {
+    background: none repeat scroll 0 0 #fff;
+    border-top: 1px solid #eee;
+    box-shadow: 0 2px 5px -1px rgba(0, 0, 0, 0.2);
+    float: left;
+    left: 0;
+    list-style: outside none none;
+    min-width: 160px;
+    position: absolute;
+    top: 100%;
+    z-index: 1000;
+}
+.navbar-nav.navbar-right .open .dropdown-menu {
+    left: auto;
+    right: 0;
+}
+.navbar-nav .open .dropdown-menu > li > a {
+    padding: 5px 15px;
+}
+.navbar-default .navbar-nav .open .dropdown-menu > li > a:focus, .navbar-default .navbar-nav .open .dropdown-menu > li > a:hover {
+    background: none repeat scroll 0 0 #edf0f5;
+}
+@keyframes sidebarSlideIn {
+0% {
+    left: -220px;
+}
+100% {
+    left: 0;
+}
+}
+.sidebar-toggled .sidebar {
+    animation: 0.2s ease 0s normal none 1 running sidebarSlideIn;
+    left: 0;
+}
+.sidebar {
+    background: none repeat scroll 0 0 #2d353c;
+    left: -220px;
+    padding-top: 0;
+    position: fixed;
+    z-index: 1020;
+}
+.sidebar-bg {
+    background: none repeat scroll 0 0 rgba(0, 0, 0, 0);
+    position: initial;
+}
+.sidebar-minified.page-with-right-sidebar .content {
+    margin-right: 0;
+}
+.sidebar-minified.page-with-right-sidebar .footer {
+    margin-right: 20px;
+}
+.content {
+    padding: 20px;
+}
+.breadcrumb {
+    float: none !important;
+}
+.footer {
+    margin: 0 20px;
+}
+.table-responsive .table > tbody > tr > td, .table-responsive .table > tbody > tr > th, .table-responsive .table > tfoot > tr > td, .table-responsive .table > tfoot > tr > th, .table-responsive .table > thead > tr > td, .table-responsive .table > thead > tr > th {
+    white-space: nowrap;
+}
+.dataTables_wrapper {
+    min-width: 767px;
+    padding: 15px;
+}
+.login .login-header, .login-content {
+    width: 100% !important;
+}
+.login {
+    margin: 108px 0;
+}
+.login .login-header {
+    left: 0;
+    margin: 0;
+}
+.invoice-company .pull-right {
+    display: block;
+    float: none !important;
+}
+.invoice .table-responsive {
+    margin-bottom: 20px;
+}
+.invoice-date, .invoice-from, .invoice-to {
+    display: block !important;
+    padding: 0 !important;
+    text-align: left !important;
+    width: 100% !important;
+}
+.invoice-date, .invoice-to {
+    margin-top: 20px !important;
+}
+.invoice-price .invoice-price-left, .invoice-price .invoice-price-right {
+    display: block;
+    float: left !important;
+    padding: 10px !important;
+    width: 100% !important;
+}
+.invoice-price .invoice-price-row {
+    display: block !important;
+    float: none !important;
+    width: 100% !important;
+}
+.invoice-price .invoice-price-left .sub-price {
+    display: block !important;
+    padding: 0 10px !important;
+    text-align: center !important;
+}
+.invoice-price .invoice-price-right {
+    text-align: center !important;
+}
+.invoice-price .invoice-price-right small {
+    display: block;
+    left: 0 !important;
+    position: relative !important;
+    top: 0 !important;
+}
+.result-list .result-image {
+    width: 160px;
+}
+.result-list .result-price {
+    font-size: 20px;
+    width: 100px;
+}
+.result-list > li > div {
+    padding: 15px;
+}
+.map {
+    left: 0 !important;
+    top: 109px !important;
+}
+.gallery .image {
+    width: 50%;
+}
+.vertical-box, .vertical-box .vertical-column {
+    display: block !important;
+}
+.width-full, .width-lg, .width-md, .width-sm, .width-xs {
+    width: 100% !important;
+}
+.fc-event .fc-event-title small {
+    display: none !important;
+}
+.calendar {
+    display: block;
+    margin-left: 0 !important;
+    width: 100% !important;
+}
+.fc-button-today {
+    float: left !important;
+}
+.fc-header-center, .fc-header-left, .fc-header-right {
+    display: table !important;
+    text-align: center !important;
+    width: 100% !important;
+}
+.calendar-event .external-event {
+    width: 100% !important;
+}
+.fc-header-left {
+    text-align: right !important;
+}
+.fc-header-center {
+    margin-top: -46px !important;
+}
+.fc-header-center h2 {
+    font-size: 18px !important;
+}
+.calendar-event .external-event i, .calendar-event .external-event p, .fc-event .fc-event-icons, .fc-header-left .fc-header-space {
+    display: none !important;
+}
+.calendar-event .external-event h5 {
+    margin: 0 !important;
+}
+.bwizard-steps li {
+    float: left !important;
+    width: 100% !important;
+}
+.nav-tabs.nav-justified.nav-justified-mobile > li {
+    display: table-cell;
+    width: 1%;
+}
+.nav-tabs.nav-justified.nav-justified-mobile > li > a {
+    margin-bottom: 0;
+}
+}
+@media (max-width: 480px) {
+.media.media-lg .pull-left {
+    float: none !important;
+    margin-right: 0;
+}
+.media.media-lg .media-object {
+    margin-bottom: 10px;
+    width: 100%;
+}
+.result-list .result-image {
+    float: none;
+    width: 100%;
+}
+.result-list .result-image a {
+    position: relative;
+}
+.result-list > li > div {
+    display: block;
+    width: 100%;
+}
+.result-list > li > .result-price {
+    border-left: medium none;
+    border-top: 1px dashed #ddd;
+    padding: 15px;
+    width: 100%;
+}
+.result-list .btn-row {
+    text-align: center;
+}
+.result-list .result-price .btn {
+    margin-top: 15px;
+}
+.gallery .image {
+    width: 100%;
+}
+}
+@media (max-width: 380px) {
+.navbar-form .form-control, .navbar-form .form-control:focus {
+    width: 160px !important;
+}
+}
+@media (max-width: 340px) {
+.navbar-form .form-control, .navbar-form .form-control:focus {
+    width: 140px !important;
+}
+}
+@media (max-width: 979px) {
+.timeline .timeline-body {
+    margin-left: 25%;
+    margin-right: 10%;
+}
+.timeline .timeline-time {
+    width: 13%;
+}
+.timeline .timeline-icon {
+    left: 13%;
+    width: 12%;
+}
+.timeline::before {
+    left: 19%;
+}
+}
+@media (max-width: 767px) {
+.timeline::before {
+    left: 50%;
+}
+.timeline .timeline-body {
+    margin-left: 0;
+    margin-right: 0;
+    margin-top: 10px;
+    padding: 20px;
+}
+.timeline .timeline-footer {
+    margin: 20px -20px -20px;
+    padding: 20px;
+}
+.timeline .timeline-body::before {
+    border-bottom-color: #fff;
+    border-right-color: transparent;
+    left: 50%;
+    margin-left: -10px;
+    top: -20px;
+}
+.timeline .timeline-time {
+    left: 0;
+    margin-right: 40px;
+    padding-top: 5px;
+    right: 50%;
+    width: auto;
+}
+.timeline .timeline-icon {
+    left: 0;
+    margin: 0 auto;
+    position: relative;
+    width: 80px;
+}
+}
+@media (max-width: 979px) {
+.coming-soon .timer .is-countdown {
+    width: 767px;
+}
+}
+@media (max-width: 767px) {
+.coming-soon .timer .is-countdown {
+    width: 100%;
+}
+}
+@media (max-width: 480px) {
+.coming-soon .timer .countdown-amount {
+    font-size: 24px;
+}
+.coming-soon .coming-soon-content .desc, .coming-soon .coming-soon-header .desc, .coming-soon .timer .countdown-period {
+    font-size: 12px;
+}
+.coming-soon .coming-soon-content .desc, .coming-soon .coming-soon-header .desc {
+    padding-left: 20px;
+    padding-right: 20px;
+}
+.coming-soon .coming-soon-content .input-group {
+    margin-left: 20px;
+    margin-right: 20px;
+    width: auto;
+}
+}

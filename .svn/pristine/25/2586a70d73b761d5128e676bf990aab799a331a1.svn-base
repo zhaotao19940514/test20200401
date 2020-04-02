@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<%@ page contentType="text/html;charset=utf-8"%>
+<%@ include file="/WEB-INF/jsp/include.jsp"%>
+<html>
+	<head>
+		<meta http-equiv="expires" content="0" />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<script src="${rootUrl }plugins/datepicker/4.8/WdatePicker.js" ></script>
+		<script type="text/javascript">
+
+		var vehicleCheck = false;
+		$(function(){
+			$.ajaxSetup ({ cache: false});
+			$("#submit").click(function(){
+				//$("#myForm").trigger("submit");
+				if(!vehicleCheck){
+					$.Taiji.showWarn("请先校验！");
+					return;
+				}
+// 				if(!validatePicType()){
+// 					return;
+// 				}
+				$("#myManage").triggerHandler("taijiModalPost",[$("#myForm"),{table:"add"}]);
+			});
+			
+			$("#vehicleType").change(function() {
+				var type = $(this).val();
+				$("#approvedCount").val(null);
+				$("#permittedWeight").val(null);
+				if(type==0){
+					$(".portativePower").hide();
+					$(".carryPassenger").show();
+					$("#refrigeratedTrucks").hide();
+					$("#type").empty();
+					$("#type").append("<option value='1'>一型客车</option>"); 
+				}
+				if(type==1){
+					$(".carryPassenger").hide();
+					$(".portativePower").show();
+					$("#refrigeratedTrucks").show();
+					$("#type").empty();
+					$("#type").append("<option value='11'>一型货车</option>"); 
+				}
+			});
+			//根据载人数动态改变收费车型
+			$("#approvedCount").change(function() {
+				var count = $(this).val();
+				var type = $("#type");
+				if(count != null){
+					if(count <= 7){
+						type.empty();
+						type.append("<option value='1'>一型客车</option>"); 
+					}else if(count >= 8 && count <= 19){
+						type.empty();
+						type.append("<option value='2'>二型客车</option>"); 
+					}else if(count >= 20 && count <= 39){
+						type.empty();
+						type.append("<option value='3'>三型客车</option>"); 
+					}else if(count >= 40){
+						type.empty();
+						type.append("<option value='4'>四型客车</option>"); 
+					}
+				}
+			});
+			//根据载重动态改变收费车型
+			$("#permittedWeight").change(function() {
+				var weight = $(this).val();
+				var type = $("#type");
+				if(weight != null){
+					if(weight <= 2000){
+						type.empty();
+						type.append("<option value='11'>一型货车</option>"); 
+					}else if(weight > 2000 && weight <= 5000){
+						type.empty();
+						type.append("<option value='12'>二型货车</option>"); 
+					}else if(weight > 5000 && weight <= 10000){
+						type.empty();
+						type.append("<option value='13'>三型货车</option>"); 
+					}else if(weight > 10000 && weight <= 15000){
+						type.empty();
+						type.append("<option value='14'>四型货车</option>"); 
+					}else if(weight > 15000){
+						type.empty();
+						type.append("<option value='15'>五型货车</option>"); 
+					}
+				}
+			});
+			
+			//车牌、车牌颜色改变重置校验结果
+			$(".dataChange").change(function(){
+				vehicleCheck = false;
+			});
+			
+			//车辆是否已存在校验
+			$("#vehicleCheckBtn").click(function() {
+				var vehiclePlate = $("#vehiclePlateAdd").val();
+				var vehiclePlateColor = $("#vehiclePlateColor").val();
+				var url = '${rootUrl }';
+				if(vehiclePlate == null || vehiclePlate == ""){
+					$.Taiji.showWarn("请先填写车牌号！");
+				}else if(vehiclePlateColor == null || vehiclePlateColor == ""){
+					$.Taiji.showWarn("请先选择车牌颜色！");
+				}else{
+					$.ajax({
+						url:url+"app/apply/baseinfo/vehiclemanagement/vehicleCheck",
+						data:{
+							"vehiclePlate":vehiclePlate,
+							"vehiclePlateColor":vehiclePlateColor
+						},
+						type:"POST",
+						success:function(response){
+// 							console.log(response);
+// 							debugger;
+							if(response.success){
+								vehicleCheck = true;
+				            	$.Taiji.showNote("校验通过！本地无此车辆信息。");
+			            	}else{
+			            		vehicleCheck = false;
+				            	$.Taiji.showWarn(response.message+"校验失败！");
+			            	}
+						},
+						error:function(error){
+// 							console.log(error);
+							$.Taiji.showWarn('请求校验失败！请联系管理员。');
+						}
+					});
+		        }
+			});
+			
+			
+			if($("#vehicleType").val()==1){
+				$("#refrigeratedTrucks").show();
+			}else{
+				$("#refrigeratedTrucks").hide();
+			}
+			//校验上传文件类型
+// 			function validatePicType(){
+// 				var filesA = $("#drivingLicensePic").get(0).files;
+// 				var filesB = $("#vehiclePic").get(0).files;
+// 				for(var i = 0;i<filesA.length;i++){
+// 					var file = filesA[i];
+// 					if(file.type != 'image/png' && file.type != 'image/jpg' && file.type != 'image/jpeg'){
+// 						$.Taiji.showWarn("行驶证只能上传png、jpg、jpeg格式的照片！");
+// 						return false;
+// 					}
+// 				}
+// 				for(var i = 0;i<filesB.length;i++){
+// 					var file = filesB[i];
+// 					if(file.type != 'image/png' && file.type != 'image/jpg' && file.type != 'image/jpeg'){
+// 						$.Taiji.showWarn("车辆只能上传png、jpg、jpeg格式的照片！");
+// 						return false;
+// 					}
+// 				}
+// 				return true;
+// 			}
+		});
+		</script>
+		
+		<style type="text/css">
+          .titile{
+          	text-align:right;
+          	font-size: 13px;
+          };
+          .details{
+          	text-align:left;
+          }
+          .caption{
+          		font-size: 15px;
+          		font-weight: bold;
+          		margin: 0px;
+          }
+          .essential{
+          	color: red;
+          }
+     	</style>
+	</head>
+<body>
+<div class="modal-header">
+	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+	<h4 class="modal-title">新增车辆</h4>
+</div>
+
+<div class="modal-body">
+<form:form modelAttribute="pageModel" id="myForm" name="myForm" cssClass="form-horizontal" action="${rootUrl }app/apply/baseinfo/usermanager/addCar" method="post">
+		<div class="form-group">
+			<p class="caption">车辆信息</p>
+			
+			<table border="1">
+				<tr style="display: none;">
+					<td colspan="6"><input name="customerId" value="${customerId }"></td>
+				</tr>
+				<tr>
+					<td class="titile"><span class="essential">*</span>车牌号码：</td><td class="details"><form:input cssStyle="width:180px" path="vehiclePlate" id="vehiclePlateAdd" class="dataChange form-control" maxlength="9" placeholder="必填"/></td>
+					<td class="titile"><span class="essential">*</span>车牌颜色：</td><td class="details">
+										<span style="float: left;"><form:select path="vehiclePlateColor" id="vehiclePlateColor" cssClass="dataChange form-control m-r-5">
+											<form:option value="">--请选择--</form:option>
+											<form:options items="${vehiclePlateColorTypes}" itemLabel="value" itemValue="typeCode"/>
+										</form:select></span><button class="btn btn-default btn-success" type="button" id="vehicleCheckBtn">校验</button></td>
+					<td class="titile">使用性质：</td><td class="details">
+										<form:select path="useCharacter"  cssClass="form-control m-r-5" data-style="btn-white" data-width="120px">
+											<form:option value="">--请选择--</form:option>
+											<form:options items="${vehicleUseCharacters}" itemLabel="value" itemValue="typeCode"/>
+										</form:select></td>
+				</tr>
+				<tr>
+					<td class="titile"><span class="essential">*</span>客货类别：</td><td class="details">
+										<form:select path="vehicleType" id="vehicleType" cssClass="form-control m-r-5">
+											<form:options items="${vehicleTypeSimples}" itemLabel="value" itemValue="typeCode"/>
+										</form:select></td>
+					<td class="titile" ><span class="carryPassenger"><span class="essential">*</span>核定座位数：</span><span class="portativePower" style="display: none;"><span class="essential">*</span>核定载重(kg)：</span></td>
+					<td class="details" ><span class="carryPassenger"><form:input id="approvedCount" path="approvedCount" cssStyle="width:180px" class="form-control" maxlength="3" placeholder="必填"/></span>
+										<span class="portativePower" style="display: none;"><form:input id="permittedWeight" path="permittedWeight" cssStyle="width:180px" class="form-control" maxlength="6" placeholder="必填"/></span></td>
+					<td class="titile"><span class="essential">*</span>车型：</td><td class="details">
+										<select name="type" id="type" class="form-control">
+											<option value="1">一型客车</option>
+										</select></td>
+				</tr>
+				<tr id="refrigeratedTrucks">
+					<td class="titile"  ><span class="portativePower">*</span>货车是否为冷藏运输：</td>
+					<td class="details" >
+							<form:select path="refrigeratedTrucks" id="refrigeratedTrucks" cssClass="form-control m-r-5" data-style="btn-white" data-width="120px">
+								<form:option value="">--请选择--</form:option>
+								<form:options items="${carType}" itemLabel="value" itemValue="code"/>
+							</form:select>
+					</td>
+				</tr>
+				<tr>
+					<td class="titile">品牌型号：</td><td class="details"><form:input path="vehicleModel" cssStyle="width:180px" class="form-control" maxlength="50" /></td>
+					<td class="titile"><span class="essential">*</span>车辆识别代号：</td><td class="details"><form:input path="VIN" cssStyle="width:180px" class="form-control" maxlength="50" placeholder="必填"/></td>
+					<td class="titile">发动机号：</td><td class="details"><form:input path="engineNum" cssStyle="width:180px" class="form-control" maxlength="50" /></td>
+				</tr>
+				<tr>
+					<td class="titile">行驶证注册日期：</td><td class="details">
+						<div class="form-inline">
+							<form:input cssStyle="width:140px" path="registerDate"
+								readonly="true" cssClass="form-control" />
+							<button type="button" class="btn btn-default btn-success form-control"
+								onclick="WdatePicker({el:$dp.$('registerDate'),dateFmt:'yyyy-MM-dd',maxDate:'#F{$dp.$D(\'issueDate\')}'});">
+								<i class="fa fa-calendar"></i></button>
+						</div></td>
+					<td class="titile">行驶证发证日期：</td><td class="details">
+						<div class="form-inline">
+							<form:input cssStyle="width:140px" path="issueDate"
+								readonly="true" cssClass="form-control" />
+							<button type="button" class="btn btn-default btn-success form-control"
+								onclick="WdatePicker({el:$dp.$('issueDate'),dateFmt:'yyyy-MM-dd',minDate:'#F{$dp.$D(\'registerDate\')}'});">
+								<i class="fa fa-calendar"></i></button>
+					 	</div></td>
+					<td class="titile">档案编号：</td><td class="details"><form:input path="fileNum" cssStyle="width:180px" class="form-control" maxlength="50" /></td>
+				</tr>
+				<tr>
+					<td class="titile">所有人名称：</td><td class="details"><form:input path="ownerName" cssStyle="width:180px" class="form-control" maxlength="50" /></td>
+					<td class="titile">所有人证件类型：</td><td class="details">
+										<form:select path="ownerIdType"  cssClass="form-control m-r-5" style="width:175px">
+											<form:option value="">--请选择--</form:option>
+											<form:options items="${customerIDTypes}" itemLabel="value" itemValue="typeCode"/>
+										</form:select></td>
+					<td class="titile">所有人证件号码：</td><td class="details"><form:input path="ownerIdNum" cssStyle="width:180px" class="form-control" maxlength="30" /></td>
+				</tr>
+				<tr>
+					<td class="titile">所有人联系方式：</td><td class="details"><form:input path="ownerTel" cssStyle="width:180px" class="form-control" maxlength="20" /></td>
+					<td class="titile">所有人联系地址：</td><td class="details"><form:input path="ownerAddress" cssStyle="width:180px" class="form-control" maxlength="100" /></td>
+					<td class="titile"><span class="essential">*</span>指定联系人姓名：</td><td class="details"><form:input path="contacts" cssStyle="width:180px" class="form-control" maxlength="50" placeholder="必填"/></td>
+				</tr>
+				<tr>
+					<td class="titile">总质量(kg)：</td><td class="details"><form:input path="totalMass" cssStyle="width:180px" class="form-control" maxlength="6" /></td>
+					<td class="titile">整备质量(kg)：</td><td class="details"><form:input path="maintenanceMass" cssStyle="width:180px" class="form-control" maxlength="6" /></td>
+					<td class="titile">牵引总质量(kg)：</td><td class="details"><form:input path="permittedTowWeight" cssStyle="width:180px" class="form-control" maxlength="6" /></td>
+				</tr>
+				<tr>
+					<td class="titile" rowspan="2">检验记录：</td><td class="details" rowspan="2"><form:textarea path="testRecord" style="height:70px" class="form-control" maxlength="120"/></td>
+					<td class="titile">轴型：</td><td class="details"><form:input path="axisType" cssStyle="width:180px" class="form-control" maxlength="30" /></td>
+					<td class="titile">车轴数：</td><td class="details"><form:input path="axleCount" cssStyle="width:180px" class="form-control" maxlength="2" /></td>
+				</tr>
+				<tr>
+					<td class="titile">轴距(mm)：</td><td class="details"><form:input path="axleDistance" cssStyle="width:180px" class="form-control" maxlength="5" /></td>
+					<td class="titile">车轮数：</td><td class="details"><form:input path="wheelCount" cssStyle="width:180px" class="form-control" maxlength="3" /></td>
+				</tr>
+				<tr>
+					<td class="titile">车长(mm)：</td><td class="details"><form:input path="vehicleLength" cssStyle="width:180px" class="form-control" maxlength="5" /></td>
+					<td class="titile">车宽(mm)：</td><td class="details"><form:input path="vehicleWidth" cssStyle="width:180px" class="form-control"  maxlength="5" /></td>
+					<td class="titile">车高(mm)：</td><td class="details"><form:input path="vehicleHeight" cssStyle="width:180px" class="form-control" maxlength="5" /></td>
+				</tr>
+				<tr>
+					<td class="titile">行驶证照片：</td><td class="details" colspan="2"><input id="drivingLicensePic" name="drivingLicensePic" type="file" class="form-control" multiple="multiple" accept="image/png,image/jpg,image/jpeg" /></td>
+					<td class="titile">车辆照片：</td><td class="details" colspan="2"><input id="vehiclePic" name="vehiclePic" type="file" class="form-control" multiple="multiple" accept="image/png,image/jpg,image/jpeg" /></td>
+				</tr>
+				<tr>
+					<td colspan="6">
+						<span style="font-size: 12px;color: red;">注：只能上传png、jpg、jpeg格式的照片！</span>
+					</td>
+				</tr>
+			</table>
+			</div>
+</form:form>
+
+</div>
+<div class="modal-footer">
+	<a href="#" class="btn btn-sm btn-white" data-dismiss="modal">关闭</a>
+	<a href="#" class="btn btn-sm btn-success"  id="submit">保存</a>
+</div>
+
+</body>
+</html>

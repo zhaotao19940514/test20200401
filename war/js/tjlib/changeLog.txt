@@ -1,0 +1,1009 @@
+3.7.1 2017.07.26
+		1、search插件增加tableFloatTop（表头浮动top位置，默认在coloradmin下为54px）参数，为适应其他ui下表头浮动。
+		涉及文件：jquery.taiji-3.0.js
+3.7.0 2017.07.04
+		1、search插件增加seachResultType(查询结果类型)参数，参数取值tbody,table,other，便于对不同的查询结果不同处理。
+		  tbody:默认值，查询成功后，把queryResult.jsp的tbody内容更新到table
+		  table:查询成功后，把queryResult.jsp的table内容替换原table，可满足不同查询条件查询结果为不同表格的需求，支持表头浮动，表头排序
+		  other:其他类型，  把queryResult.jsp的.taiji_search_data标记下的内容更新到.taiji_search_result
+		示例：角色管理的动态表格
+		涉及文件：jquery.taiji-3.0.js、stylex.css,
+3.6.8 2017.01.02
+		1、网络连接异常的处理，发送ajax请求时，如果状态返回0或ie下返回12029，提示网络连接异常。
+		涉及文件：jquery.taiji-3.0.js
+3.6.7 2016.11.16
+		1、增加taiji_ajaxForm功能，在a元素上通过data-form方式指定要提交的表单，表单提交成功后触发taijiAjaxFormSuccess事件。
+		    使用场景限于在非弹出页面提交表单
+		    示例：${rootUrl}app/sample/tjAjax,用户登录页面
+		2、解决taiji_async插件在chrome，IE下不能上传文件的问题
+		    涉及文件：jquery.taiji-3.0.js
+3.6.6 2016.11.04
+		1、通过js框架发出的请求可以监听处理后台抛出的ManagerException，MyViolationException，JsonManagerException，对应的监听事件为taijiME,taijiCVE,taijiJME。
+   		      有时候需要区分本次请求从哪个按钮触发的，在event参数中增加relatedTarget属性来获取触发按钮对象。
+		2、taiji_operate功能增加target参数，用于指定服务器返回内容插入的地方
+		示例：见${rootUrl}app/sample/tjAjax
+		涉及文件：jquery.taiji-3.0.js
+3.6.5 2016.10.27
+		1、taiji("ajaxHref",element,opts)方法的opts参数选项兼容jQuery.ajax的参数
+		2、引入jquery-confirm插件，地址http://craftpip.github.io/jquery-confirm/)，可以通过插件弹出alert，confirm，prompt等框，支持ie7+浏览器。
+		  Taiji-3.0.js可以选择是否使用jquery-confirm，如要使用，加入如下代码
+			$.Taiji.confirm=function(options){
+					return jconfirm(options);
+				};
+		涉及文件：jquery.taiji-3.0.js,stylex.css,apps.js
+3.6.4 2016.10.19
+		taiji_async插件的data-selector改进为可支持上传文件
+		涉及文件：jquery.taiji-3.0.js
+3.6.3 2016.10.12
+		1、开放$.Taiji.showProcess方法
+		2、js框架增加对http响应头taiji_jump的处理，后台响应头包含taiji_jump，taiji_jump对应的值为url，框架将执行window.location=url，从而实现跳转
+		示例：AclHandlerInterceptor中对登录超时的处理
+		涉及文件：jquery.taiji-3.0.js
+3.6.2 2016.09.29
+		taiji_modal支持校验功能，在点击.taiji_modal元素后，后台对data-selector传入的数据校验，校验失败显示提示信息而不弹出，校验成功弹出modal框。
+		示例：wizard示例中的“modal校验”按钮
+		涉及文件：jquery.taiji-3.0.js	
+3.6.1 2016.09.22
+		开发ajaxForm方法
+3.6.0 2016.09.14
+		jquery 升级至1.12.4（对开发人员可能有影响）
+		validate 升级至1.15
+		slimscroll升级到1.2.0
+		chosen.jquery升级到1.6
+		ajax-chosen修改支持jquery-1.12.4.js
+		jquery.taiji-3.0.js修改支持jquery-1.12.4.js
+		base64.js,jquery.form.js,jquery.metadata.js,chosen.jquery.js移至plugins
+		删除jquery.jqplot.all.js
+		删除jquery.taiji-2.0.js
+	
+	
+3.5.2 2016.08.19
+		验证弹出框提供参数化配置，可按bootstrap参数类型来个性化配置参数，如开发者可自定义弹出框模板、弹出框位置等。
+		示例：   $.fn.showPopover.defaults.placement="right";  //配置弹出框始终在右边弹出
+			  $.fn.showPopover.defaults.template =
+			  "<div class='popover col-sm-7'>"+
+	   				"<div class='arrow'></div>"+
+	                "<div class='popover-inner'><div class='popover-content'><p></p></div></div>"+
+	              "</div>";      //配置弹出框模板
+		涉及文件：jquery.taiji-3.0.js	
+3.5.1 2016.08.04
+		太极js框架增加export插件，用于加强导出功能，可以通过data-selector传参数，显示错误提示。
+		实现方法：后台写两个Controller方法，第一个用于生成文件，返回字符串类型的结果。第二个专门用来下载
+				前台在a元素上增加class taiji_export,a元素的href对应Controller的第一个方法，taiji_export中的参数fileUrl对应Controller的第二个方法。
+		示例：见操作日志的“导出”
+			<a href="${rootUrl }app/system/oplog/export" data-selector="#startTime,#endTime" class="taiji_export {fileUrl:'${rootUrl }app/system/oplog/export/file',confirm_message:'您确认要操作吗?'} btn  btn-success m-r-10 ">
+							<i class="fa fa-file-excel-o m-r-10"></i>导出
+						</a>
+		涉及文件：jquery.taiji-3.0.js				
+3.5 2016.07.27
+		太极js框架增加columnCompress插件，用于查询结果表格的列折叠缩小，查询更新表格后仍能维持折叠状态。
+		使用方法：开发者在需要缩小的列头上增加class taiji_column_compress，列对应的th、td用span包裹。示例见用户管理。
+		示例：<th class="taiji_column_compress"><span>日志类型</span></th>
+		涉及文件：jquery.taiji-3.0.js,stylex.css
+3.4.1 2016.07.19
+		1、查询结果表格原来只支持表头浮动，现增加列浮动功能，从而使查询结果列表可以表头和列双浮动。
+		开发者只需在包含表格的div上增加class taiji_column_float，增加属性 data-column-width设置浮动列宽度
+		2、解决bug，表头有浮动功能如果带横向滚动条，滚到最右侧变为浮动时，表头表体不对齐的问题
+	示例：见操作日志管理
+	<div   class="taiji_search_result taiji_table_float taiji_column_float table-responsive" data-column-width="60">
+	涉及文件: stylex.css,jquery.taiji-3.0.js
+3.3.4  2016.05.05
+		1、将taijijs查询功能抽出成插件形式，减小base.js代码量
+		2、开发ajaxHref方法，使用说明见tjjs.xlsx
+		3、modal框参数backdrop（是否通过点击背景关掉）移至modal模块
+		示例:见用户管理ajaxHref演示
+		涉及文件: jquery.taiji-3.0.js
+3.2.3.1	2016.05.03
+		增加对bootstrap-select的兼容，包括重置下拉框、弹出页面下拉框渲染、下拉框校验提示
+		涉及文件: jquery.taiji-3.0.js
+3.2.3   2016.03.22
+		bootstrap的modal不支持弹出多层，调整taiji.js框架使系统可以弹出2层，每层的滚动条独立。如弹出第3层，框架不做任何响应。
+		示例:见操作日志->用户选择->查看用户。
+		涉及文件: jquery.taiji-3.0.js
+3.2.2.3 2016.03.16
+		浮动表头支持不定高度，示例见操作日志查询。
+		涉及文件: jquery.taiji-3.0.js
+3.2.2.1 2016.03.03
+		1、修改“已选查询条件”兼容bootstrap-select插件，bootstrap-select插件使用简单，只需在select元素上增加class  selectpicker。
+			支持单选、多选、检索，布局符合bootstrap方式，对form无影响。示例参考 操作日志查询和用户修改
+	涉及文件:
+		jquery.taiji-3.0.js
+		将bootstrap自动fonts目录移至和css平级。
+3.2.2 2016.02.25
+		1、查询结果表格增加表头浮动功能，框架底层自动维护一个相同表格作为表头使之有等宽和浮动的特性。
+			开发者只需在包含表格的div上增加class taiji_table_float。
+		 	支持带横向滚动条的表格，表格头排序，示例见用户管理的表格。
+	示例：<div   class="taiji_search_result taiji_table_float table-responsive">
+	涉及文件: stylex.css,jquery.taiji-3.0.js
+3.2   2016.02.22
+		1、高级查询显示及隐藏，开发者将要隐藏的查询条件放入div中以及写一个触发按钮，写上taiji的class完成功能。
+		2、已选择查询条件显示，开发者在要显示的位置写一个div，框架将在查询完成后往该位置填写查询条件。
+	 示例：见操作日志查询功能。
+	 涉及文件: stylex.css,jquery.taiji-3.0.js
+
+3.1.2 2016.02.17
+		1、taiji_update,taiji_operate,taiji_remove增加支持data-selector功能，示例见用户管理的启用和停用
+		2、taiji_operate增加元数据refresh，refresh=true时所有操作完成后刷新表格，示例见用户管理的启用和停用
+	示例：
+	<a href="${rootUrl }app/acl/user/status/${vo.id}/INVALID" data-selector="#userName" class="taiji_operate {confirm_message:'是否停用用户:${vo.name} ',refresh:true} taiji_acl">停用</a>
+
+3.1 2016.01.22
+		1、当使用jquery.validate插件时，校验提示采用popover方式，校验信息的显示和关闭由jquery.validate控制。
+		2、只通过后台校验时，输入控件绑定click、focus、keydown事件来控制校验信息的关闭
+		3、默认设置增加backdrop参数，标识modal框是否通过点击背景关闭，默认值true
+
+3.0 2015.06.03
+		1、前台框架UI升级，依赖bootstrap3 框架，在Color Admin后台UI模板基础上加以整合。需要浏览器支持html5、css3。
+		2、taiji前端框架也做一些调整，定为3.0版本。
+			针对页面布局对框架做相应的修改
+			框架舍弃nyroModal弹出层及相关功能，改用bootstrap的modal组件。提供showModal,hideModal方法。
+			将showNote（成功框）、showWarn（警告框）移到$.Taiji下面，便于单独调用。
+			校验提示框依赖bootstrap的popover组件
+		3、对ui依赖的资源文件js,css,image进行整理，删掉当前不用的。增加plugins目录
+		4、按bootstrap格式对jsp页面重新布局，页面调用bootstrap的class和taiji 相关class。
+		5、对后台java代码无影响
+
+
+2.5.2	2015.05.18
+	1.功能改进
+		各操作出现ME,JME的时候，触发相应的taijiXxxMe事件，供页面后续处理，
+		典型用于场景：导入Excel，后台处理发现数据有误，写入临时Excle中，页面提供一个显示一个链接，供使用者下载
+		操作包括：add,edit,remove,multiOperate,multiRemove,opreate,popupRemove,remove,update.
+			
+		 涉及以下文件
+            js/jquery.taiji-2.0.js
+    	执行ant的JsCssCompressr任务，重新生成如下文件或直接拷贝过去
+            js/jquery/jquery.taiji.all.js
+            
+      2.BUG修复
+      	IE7下登录后，“个人信息”错位
+      	 涉及以下文件
+            css/public.css
+    	执行ant的JsCssCompressr任务，重新生成如下文件或直接拷贝过去
+            css/admin-blue.css
+            css/admin-green.css
+            css/admin-yellow.css
+
+	
+2.5.1	2015.05.08
+	1.功能改进
+		解决验证提示框遇到多个input的name值一样，无法显示验证提示框的问题，可以给每个input分配一个id值，这样后台CVE直接返回id值！
+			
+		 涉及以下文件
+            js/jquery.taiji-2.0.js
+    	执行ant的JsCssCompressr任务，重新生成如下文件或直接拷贝过去
+            js/jquery/jquery.taiji.all.js
+            
+2.5  2015.04.27 by lijunable
+	1.新增collapse(折叠)插件，目前适用于表格。不弹出新层而是采用新插入行的方式显示信息
+	2.在表格中的链接上增加class  taiji_collapse,首次点击后异步加载信息，以后点击不再发异步请求。
+	3.示例
+	<a href="${rootUrl }app/acl/user/info/${vo.id}" class="taiji_collapse taiji_acl" ><span class="icon16 icon16_check" title="查看"></span>查看（折叠）</a>            
+					
+2.4.3	2015.04.24
+	1.功能改进
+		autocomplate改为支持模糊查询，以前只能从开头查询。
+		
+		 涉及以下文件
+            js/jquery.taiji-2.0.js
+    	执行ant的JsCssCompressr任务，重新生成如下文件或直接拷贝过去
+            js/jquery/jquery.taiji.all.js	
+
+2.4.2	2015.04.09
+	1.功能改进(物流中国项目)
+		如果添加、修改页面form中有类型为file的字段，但是form属性没有写 enctype="multipart/form-data",会主动加上，以免file的字段映射失败
+		如果添加、修改页面form中没有类型为file的字段，单是form属性却有 enctype="multipart/form-data",会主动去掉，以免乱码
+		
+	2.功能改进(深圳小客车项目)
+		查询增加配置属性 
+			search:{
+				autoAddOrder:false
+			}
+		用于页面显示排序序号，默认值为false,不显示
+		
+		 涉及以下文件
+            js/jquery.taiji-2.0.js
+    	执行ant的JsCssCompressr任务，重新生成如下文件或直接拷贝过去
+            js/jquery/jquery.taiji.all.js
+			
+
+
+2.4.1	2015.03.01
+	1.bug修复，jump IE8下有问题的修复
+	2.multiOperate成功之后调用taijiMultiOperateSuccess问题修复
+	3.remove成功之后调用taijiRemoveSuccess问题修复
+	4.popupRemove成功之后调用taijiPopupRemoveSuccess问题修复
+	5.topOperate成功之后调用taijiTopOperateSuccess问题修复
+	6.operate成功之后调用taijiOperateSuccess问题修复
+	7.download成功之后调用taijiDownloadSuccess问题修复
+	
+	涉及以下文件
+            js/jquery.taiji-2.0.js
+	执行ant的JsCssCompressr任务，重新生成如下文件或直接拷贝过去
+			js/jquery/jquery.taiji.all.js
+
+2.4 2014.10.18
+	1.新增非菜单权限控制，自动隐藏无权限的非菜单链接
+	  enableAclCheck:true 打开权限控制功能
+	  aclClassName:自定义权限配置的className，默认为taiji_acl
+	    在链接上增加class  taiji_acl  
+	2.示例
+	 $("#userManage").taiji({
+		enableAclCheck:true
+	 });
+	
+	 <a href="${rootUrl }app/acl/user/view/${vo.id}" class="taiji_view {width:600,height:360} taiji_acl" ><span class="icon16 icon16_check" title="查看"></span>查看</a>
+	3.涉及文件
+	 js/jquery.taiji-2.0.js   
+	 
+2.3  2014.10.9
+	1.新增async插件，可实现异步操作功能。
+	     需在链接上增加class taiji_async，在后台继承MyAsyncController编写相应的controller。
+	     任务执行成功触发事件 taijiAsyncSuccess
+    2.示例
+    <a href="${rootUrl }app/sample/async/runTask"  class="taiji_async {process:'${rootUrl }app/sample/async/runTask/process',interval:2000,confirm_message:'您确认要操作吗?',custom_form:'#ip,#logType'}">
+    href:启动任务的url,
+    process:获取进度url,
+    interval:轮询间隔,
+    confirm_message:确认消息,
+    custom_form:自定义form
+    3.涉及文件
+			css/taiji.css
+			js/jquery.taiji-2.0.js   
+			  
+2.2.16	2014.08.13
+	1.新增重置按钮
+		<a class="taiji_search_reset"><label id="queryButton" class="btn btn_small btn_primary"><span class="icon16 icon16_reset"></span>重置</label></a>
+	2.杭州小客车项目要求点击弹出层外的暗色背景，弹出层不自动关闭。
+		新增配置项，点击弹出层外暗色背景的时候，是否关闭弹出层
+		closeOnClick : true,
+		为保持已有项目不做改动，默认配置为true,就是点击弹出层外暗色背景的时候，关闭弹出层。
+		
+		涉及以下文件
+			css/public_btn.css
+			images/icon_reset.png
+			js/jquery.taiji-2.0.js
+		执行ant的JsCssCompressr任务，重新生成如下文件或直接拷贝过去
+			js/jquery/jquery.taiji.all.js
+    		css/admin-yellow.css
+    		css/admin-green.css
+    		css/admin-blue.css
+
+2.2.15	2014.05.14
+	1.修复同一个页面多个实例之后，添加、修改按钮冲突的BUG
+	  	涉及以下文件
+			js/jquery.taiji-2.0.js
+		执行ant的JsCssCompressr任务，重新生成如下文件或直接拷贝过去
+			js/jquery/jquery.taiji.all.js
+
+2.2.14	2014.04.24
+	1.改进一级导航栏显示方式
+	2.改进页面验证提示信息显示方式
+	3.修复弹出层验证提示信息框在随滚动条移动的问题
+		
+	4.修复密码框没有边框的问题
+	5.样式修改
+	6.导航栏字体、间距修改
+		涉及以下文件
+			css/public_content.css
+			css/public_menu.css
+			css/blue.css
+			css/green.css
+			css/yellow.css
+			images/icon24_nav01.png
+			images/icon24_nav02.png
+			images/icon24_nav03.png
+			images/icon24_nav04.png
+			images/icon24_nav05.png
+			images/icon24_nav06.png
+			images/icon24_nav07.png
+			images/icon24_nav08.png
+			images/icon24_nav09.png
+			images/icon24_nav10.png
+			js/jquery.taiji-2.0.js
+		执行ant的JsCssCompressr任务，重新生成如下文件或直接拷贝过去
+			js/jquery/jquery.taiji.all.js
+    		css/admin-yellow.css
+    		css/admin-green.css
+    		css/admin-blue.css
+
+2.2.13	2014.04.22
+	1.改进
+		解决菜单、树、弹出层、校验提示的显示冲突问题。
+		
+		涉及到以下文件：
+			css/public_menu.css
+			css/public_window.css
+		
+			js/jquery.taiji-2.0.js
+		
+		执行ant的JsCssCompressr任务，重新生成如下文件或直接拷贝过去
+    		js/jquery/jquery.taiji.all.js
+    		css/admin-yellow.css
+    		css/admin-green.css
+    		css/admin-blue.css
+
+
+
+2.2.12	2014.04.20
+	1.改进
+    	查询没有结果或结果记录只有一页的时候，不显示分页。
+    2.新增 导航栏一级菜单左右隐藏功能
+    	目前向下兼容，只要是标准项目，无需作任何改变，程序会自动处理。
+    	请拷贝一下文件：
+    		js/jquery/jquery.taiji-2.0.js
+    		js/jquery/changeLog.txt
+    		
+    		css/public.css
+    		css/public_content.css
+    		css/yellow.css
+    		css/green.css
+    		css/blue.css
+    		
+    	执行ant的JsCssCompressr任务，重新生成如下文件或直接拷贝过去
+    		js/jquery/jquery.taiji.all.js
+    		css/admin-yellow.css
+    		css/admin-green.css
+    		css/admin-blue.css
+
+2.2.11	2014.04.14
+	1.改进
+		改进弹出层的弹出模式为手工弹出，避免链接的href被脚本改变之后，不能打开新链接的问题，
+	2.新增
+		tjUtils.toUpperCase 转换为大写
+		tjUtils.toLowerCase 转换为小写 
+		tjUtils.scb2dbc 全角到半角 
+		tjUtils.toDbcUpperCase 全角到半角，并且转换为大小 
+		tjUtils.toDbcLowerCase 全角到半角，并且转换为小写
+		使用方式如下
+		$("#input").on("blur",tjUtils.toUpperCase);
+
+2.2.10	2014.04.08
+	1.BUG修复
+		因2.2.6的autocomplete改进，对显示后台验证信息造成了一些问题。现已修复。
+
+2.2.9	2014.04.03
+	1.功能改进
+		福州项目manage页面的查询结果表头有多行的情况存在，需要进行改进。
+		改进之后，如果页面的查询结果表头不存在多行的情况，无需作任何改变。
+		如果查询结果表头存在多行代码做如下改动：
+		JS部分：
+		 $("#userManage").taiji({
+		        search:{
+		            thInThead:true
+		        }
+		    });
+		HTML部分-（将表头放在thead中）：
+		<thead>
+            <tr><td colspan="7"><div class="ico_title"></div><div class="float_left">用户列表</div></td></tr>
+            <tr class="taiji_keep_me" id="aa">
+                <th width="20px"><input type="checkbox" class="taiji_check_all" name="checkAll" /></th>
+                <th>登录名</th>
+                <th class="taiji_sortable {orderBy:'name',desc:true}">名字</th>
+                <th width="450px">操作</th>
+            </tr>
+        </thead>    
+
+2.2.8    2014.04.03
+    1.功能改进
+    以前是进入manage页面就自动执行一次查询，福州项目需要进入manage页面不自动执行查询。
+    改进之后，如果进入页面就自动执行查询的不用做任何变动。
+    如果进行页面不自动执行查询的，manage页面代码进行如下改动:
+
+        $("#userManage").taiji({
+            search:{
+                autoSearch:false
+            }
+        });
+     2.jquery版本升级到1.8.3
+     3.jquery.validate版本升级到1.11.1
+
+2.2.7    2014.04.01
+    修改resource相关，以支持添加3级菜单和页面按钮，
+    
+    页面按钮的权限控制尚未完成！
+
+    需要拷贝到各系统的文件包括：
+        cn.com.taiji.sample.dao.jpa.AppResourceDaoJap.java
+
+        /WEB-INF/jsp/acl/resource/manage.jsp
+        /WEB-INF/jsp/acl/resource/tree.jsp
+        /WEB-INF/jsp/acl/resource/treeItem.jsp
+	
+
+2.2.6 2014.03.20
+    1.对autocomplete功能进行改造，不在依赖于jquery.autocomplete.js了，理由多多。
+        a.页面标签改为select，无需多一个input来模拟了。    
+         b.改为使用chosen.jquery.js实现页面自动完成,
+         <select name="nickName" data-placeholder="请选择昵称" class="taiji_autocomplete" style="width: 200px" >
+             <option value=""></option>
+             <option value="1">测试员</option><option value="2">管理员</option><option value="3">管理员2</option>
+        </select>
+         c.改为使用ajax-chosen.js实现异步自动完成
+             <select name="name" data-url="/book/datalist.php" data-placeholder="请选择密码" class="taiji_autocomplete"  style="width: 200px"   >
+                <option></option>
+            </select>
+        注意事项如下:使用data-placeholder模拟html5的placeholder。
+                依然是所有data-url来区分是页面还是异步,
+                添加一个taiji_autocomplete的class再select标签上
+        需要往其他正式系统中拷贝的改动有：
+            新增加/js/jquery/chosen.jquery.js
+                        /js/jquery/ajax-chosen.js
+                    /css/chosen.css
+                    /css/chosen-sprite.png
+            修改文件 
+                    /war/WEB-INF/jsp/acl/user/add.jsp
+                  /builde.xml 
+
+
+2.2.5    2014.03.19
+   sample-role中的 树已经被替换下来了，利用的是zTree,API网址为http://www.ztree.me/v3/api.php
+    zTree比较符合我们的需要，并且是中午文档，也有利于大家的使用，
+    下一步可能考虑对zTree进行一个小包装，因为有一些回调函数可能需要在每个页面都用到
+    beforeCollapse函数覆盖默认值true,返回false，这样点击打开的菜单就不会自动关闭了
+    beforeExpand函数覆盖，这样点击打开一个新的菜单的时候，会关闭跟他同级的其他菜单，实现切换效果
+    onClick函数覆盖，这样点击菜单名称的时候，就跟点击菜单前面的+号一样，会展开菜单了。
+   
+    
+    callback:{
+                beforeCollapse:function(){
+                    return false;
+                },
+                beforeExpand:function(treeId,node){
+                    var parent = node.getParentNode();
+                    var zTree = $.fn.zTree.getZTreeObj(treeId);
+                    var nodes = zTree.getNodesByFilter(function(node,data){
+                        if(node.level === data.level && node.id !== data.id) return true;
+                        else return false;
+                    },false,parent,{"level":node.level,"id":node.id});
+                    for(var n in nodes){
+                        zTree.expandNode(nodes[n],false);
+                    }
+                },
+                onClick:function(event,treeId,node){
+                    $("#"+node.tId+"_switch").trigger("click");
+                }    
+            }
+    需要往其他正式系统中拷贝的改动有：
+        新增加/js/jquery/jquery.ztree.js
+                    /css/zTreeStyle/*
+         修改/war/WEB-INF/jsp/acl/resource/tree.jsp 
+                  /war/WEB-INF/jsp/acl/resource/manage.jsp 	
+                /war/WEB-INF/jsp/acl/resource/treeItem.jsp         
+                /war/WEB-INF/jsp/acl/role/manage.jsp 
+                /war/WEB-INF/jsp/acl/role/conf.jsp    
+      可以删除jquery.tree.js、jquery.tree.checkbox.js和 jquery.jstree.js文件，以及 /war/js/jquery/themes目录夹 ,但是考虑到可能其他系统已经使用这几个文件，暂时可以不删除，待各项目组自行删除        
+
+
+
+2.2.4 2014.03.13
+    1.新增autocomplete功能，分三种情况：(示例参见 sample-role-系统管理-用户管理-添加)
+        A.支持从后台查询数据来显示
+            页面上的input示例如下
+            <input type="text" data-url="/XXX" data-id="YYY" name="xxx"/>
+            <input type="hidden" name="xxx" id="YYY"/>
+        B.浏览器支持html5的datalist,页面使用html5的方式
+            页面上的input示例如下
+            <input type="text" list="XXX" data-id="YYY" name="xxx"/>
+            <input type="hidden" name="yyy" id="YYY"/>
+            <datalist for="XXX">
+                <option value="AAA">aaa</option>
+                <option value="BBB">bbb</option>
+                <option value="CCC">ccc</option>
+            </datalist>
+        C.浏览器吧不支持html5的datalist,页面使用html5的方式，插件进行自动模拟
+            页面上的input示例如下
+            <input type="text" list="XXX" data-id="YYY" name="xxx"/>
+            <input type="hidden" name="yyy" id="YYY"/>
+            <datalist for="XXX">
+                <option value="AAA">aaa</option>
+                <option value="BBB">bbb</option>
+                <option value="CCC">ccc</option>
+            </datalist>
+        特别注意，第一种方式的时候，在input中不要添加list属性，以免支持datalist的浏览器有不可预见的问题。
+        Java代码如下：
+        List<Role> roles = roleManager.listByName(name);
+        List<LabelIdPair> pairs = new ArrayList<LabelIdPair>();
+        for(Role role : roles){
+            LabelIdPair pair = new LabelIdPair();
+            pair.setLabel(role.getName());
+            pair.setId(role.getId());
+            pairs.add(pair);
+        }
+        super.responseJson(JsonTools.toJsonStr(pairs), response);
+
+
+2.2.3	2014.03.07
+	1.新增placeholder功能，在不支持placeholder的浏览器中用javascript进行模拟；
+		在支持placheholder的浏览器中，还是使用原生的palceholder
+		sample.role中的示例见 “系统管理-用户管理”
+	2.taiji.css中新增  .taiji_placeholder 类，用于placheholder模拟的显示和隐藏
+	3.head.jsp中删除了对html5.js的引用，因为html5.js不支持placeholder,仅仅支持html5标签
+		而我们的页面还没有html5的专用标签
+	4.IE8下弹出层大小无法控制，目前才有在<div class="window_k" >增加了 style="width: ???px"来解决
+		已修改的相应页面为：
+		acl/user目录下的 add.jsp,edit.jsp,view.jsp
+		acl/role目录下的 add.jsp,edit.jsp,conf.jsp
+		acl/resource目录下的add.jsp,edit.jsp
+		system/cron目录下edit.jsp,view.jsp
+		
+2.2.2 2014.03.05
+	1.新增查询无结果或查询返回数据错误，页面隐藏分页栏，并显示"没有检索到符合条件的数据！"	
+	2.css新增taiji_not_found，用于显示"没有检索到符合条件的数据！"，美工后期可以进行美化
+	3.pager.jsp做了相应的改变
+	4.改进点击表头进行排序，（此排序是数据库重排）。
+	5.sample-role项目新增点击表头排序示例，参见系统管理-调度日志
+		A.修改查询Model继承自 OrderModel,OrderTimeModel,OrderPaginModel,OrderTimePaginModel,
+			如：public class ScheduleLogQueryModel extends OrderTimePaginModel
+		B.页面在表头添加class="taiji_sortable {orderBy:'待排序字段名称',desc:true|false}"
+			如：<th class="taiji_sortable {orderBy:'taskName',desc:true}">任务名称</th>
+		C.ManagerImpl.java往DaO多传一个参数 从model中获取 qm.toOrderSql();
+			如：logDao.queryPage(qm.getPageNo(), qm.getPageSize(),qm.toOrderSql());
+		D.Dao实现类中在最后判断orderSql是否有值，如果有就添加到查询hql中
+			String countHql = COUNT_ID + hql.toString();
+			if(StringTools.hasText(orderSql)){
+				hql.append(orderSql);
+			}else{
+				hql.append(" order by startTime desc");
+			}		
+
+2.2.1 2014.03.04
+	1.修复了弹出层关闭，验证提示信息不能自动消除的BUG(目前的解决方案需要进一步的优化)
+
+2.2.0 2014.02.27
+	1.(添加、修改、查询)新增placeholder功能。
+	2.(添加、修改、查询)改变表单验证方式为后台验证，验证失败信息提醒方式为仿html5页面验证失败提醒方式。
+	3.(添加、修改、查询)取消前台验证，去除对jquery.validate.js的引用。
+	4.(添加、修改、查询)取消前台验证，去除对jquery.validate.manage.js的引用。
+	5.分页采用自己的插件，取消对jquery.pager.js的引用。
+	
+2.1.2	2014.01.02
+	1.修正taijiJump的问题	
+	2.修正分页的的BUG
+		
+
+2.1.1 2013.10.31
+	1.为兼容以前的版本，对add函数进行了修补	
+	
+2.1.0	 正式发布版	2013.10.25
+	1.修补查询到0条记录是分页显示不正常的BUG
+	2.修补添加、删除之后总记录数不变化的BUG
+	3.修补批量删除传值的BUG
+	4.代码优化
+
+2.0.13 RC4 2013.09.16	
+	1.配合新样式，修改部分代码
+
+2.0.12 RC3	2013.08.29
+	1.修正taijiJump的表现，不再跳转，直接将返回的内容显示在当前页面
+
+2.0.11 RC2	2013.08.26
+	 1.增加$.Taiji.taijiJump(form,$button,options)方法。[[目前还未提供对表单中含file字段的支持]]。
+        A.参数说明如下：
+            form         表单。
+            $button    提交按钮，操作期间会被禁用，防止反复提交。
+            options    其他需要设置的ajaxSubmit参数。
+            
+        B.应用与如下场景：
+            a.定位在前台页面
+            b.表单页面异步提交表单；成功则跳转到指定的URL，失败则停留在当前页面。
+
+        C.简单示例
+        a.表单页面如下：
+            $(“#form”).validate({
+                rules:{.......},
+                submitHandle:fucntion(form){
+                    var options = {.....};
+                     $.Taiji.taijiJump(form,$(“#submit”),options);
+                }
+        });
+
+        $(“#submit”).click(function(){
+                $(“#form”).trigger(“submit”);
+        });
+        b.Controller
+            @ReqestMapping(....);
+            public void do(.....){
+                .....
+                addSuccess(reponse,”操作成功");
+                response.setHeader("Location", jumpUrl);
+            }
+
+
+2.0.10 RC1 2013.8.9
+	1.修复弹出层信息提示不显示的BUG
+
+2.0.9 beta9 2013.08.05
+	改进：
+	1.列表点击列头进行服务器端排序
+	此次对代码进行了比较大的改动，主要是对 manage.jsp 和queryResult.jsp进行了改动。
+	所以不建议在已有项目中进行改动。
+	分别如下：
+	A.manage.jsp页面的<div class="taiji_search_result"></div>
+	改为如下：
+	   	<div>
+			<!---操作区域 -->
+	   		<div class="taiji_operate_area"></div>
+			<!---分页区 -->
+	   		<div class="taiji_pager"></div>
+	   	</div>
+		<div class="taiji_search_result">
+       		<table>
+        		<thead>
+        			<tr>
+						<!---表头区 -->
+            			<th>登录名</th>
+						<!---可点击排序的表头 -->
+            			<th class="taiji_sortable {'sortFiled':'userName'}">用户名</th>
+            			<th >操作</th>
+            		</tr>
+        		</thead>
+        		<!-- 查询结果内容区 -->
+       			<tbody>
+        		</tbody>
+        	</table>
+ 		</div>
+        <div>
+			<!---操作区域 -->
+	   		<div class="taiji_operate_area"></div>
+			<!---分页区 -->
+	   		<div class="taiji_pager"></div>
+	   	</div>
+     B.queryResult.jsp做如下改动
+     	<div> 
+			<div id="taiji_search_data">
+    			<table>
+    				<c:forEach items="${pagn.result}" var="vo"  varStatus="voStatus">
+						<%@ include file="row.jsp"%>
+					</c:forEach>
+    			</table>
+    		</div>
+    		<div id="taiji_search_pager" >
+		    <label id="taiji_search_totalcount">${pagn.totalCount }</label>
+		    <label id="taiji_search_pagecount">${pagn.pageCount }</label>
+		    <label id="taiji_search_pageNo">${pagn.currentPage }</label>
+		</div>
+		</div> 
+    C.可点击排序的 表头，加上class="taiji_sortable {'sortField':'userName'}"
+    D.后台Controller接收 sortField(值为class中配置的值，如上例为：userName)和sortType(值为desc或asc)字段，
+        
+	2.修正添加、修改带file字段的BUG，
+	  带file字段的添加、修改的result.jsp页面进行如下修改：
+	   2.1以前result.jsp如下的内容：
+		<div>
+		    <table class="taiji_result_data">
+		        <%@ include file="row.jsp"%>
+		    </table>
+		</div>
+		2.2改为
+		<div>
+		    <div id="taiji_note“>操作成功</div>
+		    <table class="taiji_result_data">
+		        <%@ include file="row.jsp"%>
+		    </table>
+		   </div>
+
+	2.0.10将作为2.0的正式版发布。
+
+2.0.8 beta8 2013.07.12
+	改进:
+	1.代码全部重构,将除了核心的查询，分页，选中效果留在了core.js中，
+	    其他全部拆分为单独的方法中， 作为插件，
+	2.插件方法更新，经过一段时间的思考，对以前的插件方法进行了改进。
+	    目前的插件格式如下：
+	 (function($){
+		$.Taiji.extendMethod({
+			 //插件名字，用于包装config，在插件内部就可以用this.settings.pluginName.className引用了
+		 	name:'pluginName',
+		 	 //是否使用弹出层，默认不使用，目前有add,edit,view,popupRemove使用
+		 	userNyroModal:true,
+		 	//通过响应哪些事件(标准事件click,change等)来实现插件功能
+		 	event:{
+		 		//click事件
+		 		"click":{
+		 			//"className",在那个拥有this.settings.pluginName.className的class的链接上响应事件，
+		 			//"_handlePluginClick",处理此事件的函数名
+		 			"className":"_handlePluginClick"
+		 		},
+		 		//change事件
+		 		"change":{
+		 			//"otherClassName",在那个拥有this.settings.pluginName.otherClassName的class的链接上响应事件，
+		 			//"_handlePluginChange",处理此事件的函数名
+		 			"otherClassName":"_handlePluginChange"
+		 		}
+		 		//more..
+		 	},
+		 	//自定义事件，目前自定义事件需要在  包装的 div上触发, $(this.currentTarget).trigger("taijiPluginPost");
+		 	customEvent:{
+		 		//"taijiPluginPost",自定义的事件名
+		 		//"_handlePluginPost"，此事件的处理函数名
+		 		"taijiPluginPost":"_handlePluginPost"
+		 	},
+		 	//需要追加到taiji上的方法，主要是各种事件处理函数。
+		 	eventHandler:{
+		 		//处理函数
+		 		_handlePluginClick:function(){},
+		 		//处理函数
+		 		_handlePluginChange:function(){},
+		 		//处理函数
+		 		_handlePluginPost:function(){}
+		 	},
+		 	//可配置项，可以通过this.settings.pluginName.xxxx引用
+		 	config:{
+		 		//可以通过this.settings.pluginName.className引用
+		 		className:".taiji_plugin",
+		 		//可以通过this.settings.pluginName.otherName引用
+		 		otherClassName:'.taiji_pluginOther'
+		 	}	
+		 });
+	  }); 
+
+2.0.7 beta7 2013.07.08
+	改进：
+	1.修正add,edit,view弹出页面出现了个关闭按钮的BUG。
+	2.修改多级弹出之后,后续操作有问题的BUG。
+	3.将add,edit,popupRemove页面的调用方式进行了修改，
+	  add页面，不再使用$.taijiAddSubmit(form,options)的方式，
+	  改为$("myManage").triggerHandler("taijiAddPost",[form,options]);的方式
+	  edit页面，不再使用$.taijiEditSubmit(form,options)的方式，
+	  改为$("myManage").triggerHandler("taijiEditPost",[form,options]);的方式
+	  popupRemove页面，不再使用$.taijiPopupRemoveSubmit(form,options)的方式，
+	  改为$("myManage").triggerHandler("taijiPopupRemovePost",[form,options]);的方式
+	    原有的调用方式已经不推荐使用了，将在未来的某个版本中移出。
+	4.根据jQuery官方文档，bind,unbind方法将在未来的版本被弃用，在我们项目中用on,off方法替换。
+		 
+
+2.0.6 beta6 2013.07.01
+	改进：
+	1.所有的callback方式已经被抛弃，将在未来的版本得不到支持了
+	      如下代码$("#myManage").taiji();
+	  search成功之后，将在容器元素myManager上触发 taijiSearchSuccess事件
+	  add成功之后，将在容器元素myManager上触发 taijiAddSuccess事件
+	  edit成功之后，将在容器元素myManager上触发 taijiEditSuccess事件
+	  remove成功之后，将在容器元素myManager上触发 taijiRemoveSuccess事件
+	  operate成功之后，将在容器元素myManager上触发 taijiOperateSuccess事件
+	  multiRemove成功之后，将在容器元素myManager上触发 taijiMultiRemoveSuccess事件
+	  update成功之后，将在容器元素myManager上触发 taijiUpdateSuccess事件
+	  topOperate成功之后，将在容器元素myManager上触发 taijiTopOperateSuccess事件
+	2.为应对第一点改变，现在调用$("#myManage").taiji(),将返回 $("#myManage"),以便可以这样使用：
+	  $("#myManage").taiji().on("taijiSearchSuccess",function(event,responseText){.......});
+
+2.0.5 beta5	2013.06.20
+	改进：
+	1.对代码进行了初步的重构，方法多了，方法体短了。但还有进一步提升的空间。
+    2.修正了 点击弹出层之后，页面还在自动 刷新的BUG。
+    3.重构代码的时候，增加了注释，可以用 jsdoc生成初步的API说明
+    4.显示信息提出来
+    5.对多处使用的数据，提出到常量
+    6.减少属性查找，比如this.settings.search.formClassName 使用局部属性 searchFormClassName来代替
+
+2.0.4 beta4 2013.06.14
+	改进：
+	1.新增导出功能(exported)
+	2.新增topOperate功能,与operate功能有区别,operate用于查询数据行中;topOperate用于查询之外。
+	3.代码通过了jslint的基本检查，可以考虑进一步严格的检查。
+
+2.0.3 beta3	2013.06.08
+	改进
+	1.修正boxtab css报错问题
+	2.修改下载失败的提示信息不能到页面
+	3.修正查询表单回车不能查询的BUG,上一个版本的代码好像拷贝的时候弄错了。
+	4.批量删除提出到外面，为customForm做准备
+
+
+2.0.2 beta2	2013.06.02
+	改进
+	1.增加定时刷新功能，autoRefresh:{enable:true,interval:60000}
+	2.修正查询表单回车不能查询的BUG
+	3.提示信息背景色增加了透明效果
+	4.增加批量删除功能	
+
+2.0.1 beta1	2013.05.09
+	完全重写所有的方法
+	主要为修复以下一些问题：
+	1.因为1.2.1升级 jquery.nyroModal.js版本之后，导致了一些问题。
+	2.可定制性的进一步改进。
+	3.因为大多数不需要页面排序，去掉了对jquery.tablesorter.js的引用。
+	4.对相应的依赖插件进行了版本升级。
+	5.增加了qunit单元测试用例，对所有的功能进行测试。
+	
+1.2.1	2012-07-03
+	改进
+	【改进内容】  
+	      1. 将 stack的默认值从false改为true，以默认支持弹出多层之后，可以分别关闭的模式。
+	      
+	      2.Controller父类中增加了BaseValidController，这个类将截获ManagerException和ConstraintViolationException，
+	                     所以只要继承自BaseValidController这个父类之后，自己的Controller中就只需要处理正确的情况就可以了，
+	                     减少大家的编码量。ManagerException就直接抛出即可。
+	    	   例如：
+	         @RequestMapping(value = "/add", method = RequestMethod.POST)
+			public String processAddForm(@Valid @ModelAttribute("pageModel") User user, BindingResult result,
+					HttpServletRequest request, Model model) throws ManagerException
+			{
+				String id = userManager.add(user);
+				addSuccess(model, "添加用户成功");
+				model.addAttribute("vo", userManager.findById(id));
+				super.addSysLog(request, "添加用户({})成功", user.getName());
+				return "acl/user/result";
+			}             
+	            
+	
+	【注意事项】
+	   1.如果弹出多个层，请将每层中的 关闭按钮的class设为不同的值，以免冲突
+	   
+	   2.如果弹出层里也需要有查询页面，请将每个查询页面中的 form的name、id属性和查询按钮的id属性 设为不同的值，
+	     	例如：
+			$("#lastTable").taiji({
+				pagerForm:"#lastForm",
+				pagerUrl:true,
+				edit:true,
+				update:true,
+				view:true
+			});
+
+
+1.2.0 2012-06-26
+	改进
+	【改进内容】
+		1.将jQuery.nyroModal.js升级到v2,因为nyroModal的2.0与1.6.2版本不兼容，所以升级之后的目前只支持2.0的版本，
+		2.支持 javax.validation的验证方式，并且验证出错信息显示在相应字段的后面。
+	【改进目的】
+	 	1.改进之后，弹出第二个层的时候，大小不受第一个层大小的限制了。
+	 	2.支持 javax.validation验证方式。
+	
+	【改进之后使用的注意事项】
+		1.弹出页面中的关闭调用变化：请使用 parent.$.nmTop().close();取代以前使用的 parent.$.nyroModalRemove();
+		2.弹出页面不在支持iframe方式，所以弹出页希望使用的脚本，请在主页面加载。
+		3.默认弹出第二个层的时候，第一个层会被关闭，如果希望保持第一个层，请在调用中增加选项 stack:true,
+	        	例如：
+	        	$("#queryResult").taiji({
+					stack:true
+				});
+				
+		4.对javax.validation验证方式的使用方式：
+		   在实体类中增加如下注解：
+			@NotNull
+			@Size(min=3,max=16)
+			private String mobile;
+		   在Controller的processAddForm或porcessModForm的方法增加@Valid注解，改为如下形式：
+		    public String processAddForm(@Valid @ModelAttribute("pageModel") User user,
+		    并且在方法体中增加如下代码：
+		  	catch(ConstraintViolationException cve){
+				//验证失败的时候，调用父类的addViolation,将出错信息显示在弹出窗口中的字段后。
+				super.addViolation(model,cve);
+			}
+		 
+			
+	【单独使用nyroModal的注意事项】
+		1.当nyroModal单独使用的时候，也需要注意以上的变化。
+		2.同时目前对弹出层窗口大小的设定方式也有变化，
+	      	 请使用 sizes:{minH:xxx,minW:xxx}取代以前使用的：minWidth:xxx,minHeight:xxx
+			例如：
+		       $('.nyroModal').nyroModal({
+					stack:true,
+					sizes:{minH:200,minW:200}
+				});		
+
+1.19 2010-11-25
+	改进，
+	A.通过引入 jquery.metadata.js,支持使用元数据方式指定弹出层大小。
+		add的方式如下描述，
+		4.如果有多个添加弹出层，并且大小不一样，还可以如下设置：(since 1.19)
+	 		将add设置为true,
+	 		将add所在的a 标签的class设置为 'taiji_add {boxwidth:xxx,boxheight:yyy}'
+		其他edit,view,popupRemove同上。
+		
+	【注意】：推荐使用此模式，不再建议使用1.15版本新增的2,3两种模式。
+	【注意】：使用此模式的页面，必须要 引入  jquery.metadata.js
+	
+	B.支持对查询条件进行验证，
+		 默认第一次查询的时候，不进行验证。
+	 	设置方式为 validate插件默认的方式，例如：
+		pagerFormValidateRules:{xxx:{required:true},yyyy:{required:true}},
+	  
+
+1.18 2010-11-16
+	jQuery版本更新到1.4.4，并通过测试
+	update和operate操作增加了loading
+
+1.17 2010-08-30
+	代码重构：
+	QUnit测试完成，所有的函数调用都能单独进行测试了。并且减少了对全局函数及变量的占用。
+	下一步如果有时间的话，会进行更深入的测试，并且希望能够把代码做进一步的调整，希望可以完全去掉对全局函数及变量的占用。
+	QUnit的测试参见 war/WEB-INF/jsp/smaples/qunit/qunitTest.jsp
+
+
+1.16 2010-08-27
+	代码重构：
+	主要对代码进行了模块化的改造，便于使用QUnit进行测试，以改变目前需要手工进行页面点击测试，手工测试往往会出现测试不完全的情况，
+	目前的改造进行了一部分，接下来如果没有什么新的功能添加的话，就会进一步的改造。
+	代码的功能保持不变。
+
+1.15 2010-08-25
+	功能增强：
+	主要针对add,edit,view,popupRemove参数
+	这4个都是设置是否需要弹出层的，现在主要是应可以单独设置每个弹出层的大小的需求而修改，
+	这4个的参数配置说明是一致的，主要有3种设置情况，以add为例：
+	   1.如果使用弹出层大小自适应或者与修改、查看一样，请设置此值为true,
+	   2.如果add使用单独的大小，并且所有的add使用一样的，请设置为 {boxwidth:xxx,boxheight:yyy},其中xxx,yyy为要设置的宽和高
+	   3.如果有多个添加弹出层，并且大小不一样，请设置为 '{"taiji_add1":{"boxwidth":"xxx","boxheight":"yyy"},...}',
+       		其中 taiji_add1为相对应的按钮的class,xxx、yyy为要设置的宽和高；多个建议使用 taiji_add1,taiji_add2的方式来区别，
+       		也可以使用 taiji_add_user,taiji_add_role等更具有描述性的词来区分
+
+	【注意】：第二种设置与第三种设置的时候，需要严格按照 示例的格式，为的是向下兼容。
+
+1.14 2010-08-18
+	功能增强：
+	主要针对pagerUrl参数：
+		1.默认值为false,不执行查询；
+     	2.设为true，执行查询；
+	   	3.设为url，直接设置到form的action上，不建议使用此种方式，留此选择为向下兼容。
+
+
+1.13 2010-08-03
+	功能改进：
+	现在可以针对 add,view,update,popupRemove分别定义弹出层的大小，
+	方式为： add:{boxwidth:"500",boxheight:"500"}
+	此次改进为平滑升级，对于不需要分别定义弹出层的大小的情况，
+	调用方式依然使用以前的方式： add:true
+
+1.12 2010-06-25
+	功能改进:
+	1.pagerUrl参数可以不传，直接写在form的action中就可以了。
+	2.代码重构
+
+1.11 2010-05-27
+	修正remove,update,operate 的链接由文字变更为图片之后，出现点击没有效果的问题
+
+1.10 2010-05-27
+	修正查询之后， 录入查询条件，未点击查询，直接点击 下一页的时候，出现的数据不一致情况
+	更具体的描述参见http://192.168.5.18:8081/browse/COMMPETITOR-137中的图
+
+1.9 2010-05-19
+	修正BUG,修正remove,operate方法中事件绑定出现的问题
+
+1.8 2010-05-10
+	添加功能，截获查询条件中的input:text的keydown事件，用于消除只有一个input框的时候，
+	按回车直接提交而非ajax提交，从而页面不正确的情况
+
+1.7 2010-05-05
+	修正BUG,update方法中事件绑定出现的问题。
+
+1.6 2010-05-04
+	增加了如下的可选参数
+	popupRemove:是否使用弹出层来执行操作并在操作成功的情况下删除当前行，默认值：false
+	popupRemoveCallback:popupRemove完成之后，页面进行特殊处理(将服务器返回的数据作为参数调用)
+
+
+1.5 2010-04-19
+	增加了如下的可选参数：
+	addCallback: add完成之后，页面进行特殊处理(将服务器返回的数据作为参数调用)
+	editCallback: edit完成之后，页面进行特殊处理(将服务器返回的数据作为参数调用)
+	delCallback: del完成之后，页面进行特殊处理(将服务器返回的数据作为参数调用)
+	removeCallback: remove完成之后，页面进行特殊处理(将服务器返回的数据作为参数调用)
+	operateCallback:operate完成之后，页面进行特殊处理(将服务器返回的数据作为参数调用)
+
+	值得注意的问题是：<table>标签之后会添加<tbody>标签，无论页面是否写有。处理数据的时候应该当心
+
+1.4 2010-04-13
+	1.为remove,operate,update增加了确认
+	 使用方式为: <a href="***.do" class="taiji_remove" confirm_message="您确认要删除当前记录吗？">
+
+
+1.3 2010-03-22
+	1.增加了 update 选择，主要用于改变一条记录的状态的同时，还需要更新当前行的内容的异步操作，
+		与operate选项有区别，
+
+
+1.2 2010-03-14
+	1.增加了 operate 选项，主要用于仅仅改变记录的某一状态等异步操作，不更新当前数据行
+	2.增加了 remove 选项，主要是对del选项的升级，
+	   现在可以直接使用 <a href="***.do" class="taiji_remove">的方式,减少对页面的限制
+
+
+1.1 2010-03-03
+
+   1.弹出层插件 从jquery.colorbox.js更换为 jquery.nyroModal.js ,为解决弹出层中再次弹出层的难题
+   2.对与页面约定的 class类名从通用的名称修改为以taiji_为前缀的专用名称，
+   	例如：taiji_view,taiji_add,taiji_edit,以减少与页面class类名的冲突
+   3.添加，修改验证现在 可以放在 添加，修改页面了，	

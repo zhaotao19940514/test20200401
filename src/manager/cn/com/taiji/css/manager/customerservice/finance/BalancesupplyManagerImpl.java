@@ -1,0 +1,379 @@
+
+package cn.com.taiji.css.manager.customerservice.finance;
+
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.time.LocalDate;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.ui.Model;
+
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.common.manager.net.http.binclient.ApiRequestException;
+import cn.com.taiji.common.model.dao.LargePagination;
+import cn.com.taiji.css.entity.User;
+import cn.com.taiji.css.manager.abstractmanager.AbstractDsiCommManager;
+import cn.com.taiji.css.model.customerservice.finance.BalancesupplyRequest;
+import cn.com.taiji.css.model.customerservice.finance.CardrechargeRequest;
+import cn.com.taiji.css.model.customerservice.finance.CardrechargeResponse;
+import cn.com.taiji.dsi.manager.comm.client.FinanceBinService;
+import cn.com.taiji.dsi.manager.comm.client.ReckonBinService;
+import cn.com.taiji.dsi.model.comm.protocol.finance.CardChargeByCOSRequest;
+import cn.com.taiji.dsi.model.comm.protocol.finance.CardChargeByCOSResponse;
+import cn.com.taiji.dsi.model.comm.protocol.finance.CardChargeCheckRequest;
+import cn.com.taiji.dsi.model.comm.protocol.finance.CardChargeCheckResponse;
+import cn.com.taiji.dsi.model.comm.protocol.finance.CardChargeConfirmByCOSRequest;
+import cn.com.taiji.dsi.model.comm.protocol.finance.CardChargeConfirmByCOSResponse;
+import cn.com.taiji.dsi.model.comm.protocol.finance.CardReplaceRequest;
+import cn.com.taiji.dsi.model.comm.protocol.reckon.CardAccountReckonRequest;
+import cn.com.taiji.dsi.model.comm.protocol.reckon.CardAccountReckonResponse;
+import cn.com.taiji.qtk.entity.AccountCardBalance;
+import cn.com.taiji.qtk.entity.AccountCardBalanceOperate;
+import cn.com.taiji.qtk.entity.AccountRefundDetail;
+import cn.com.taiji.qtk.entity.CancelledCardDetail;
+import cn.com.taiji.qtk.entity.CardInfo;
+import cn.com.taiji.qtk.entity.dict.AccountCardBalanceOperateType;
+import cn.com.taiji.qtk.entity.dict.RefundDetailType;
+import cn.com.taiji.qtk.repo.jpa.AccountCardBalanceOperateRepo;
+import cn.com.taiji.qtk.repo.jpa.AccountCardBalanceRepo;
+import cn.com.taiji.qtk.repo.jpa.AccountRefundDetailRepo;
+import cn.com.taiji.qtk.repo.jpa.CancelledCardDetailRepo;
+import cn.com.taiji.qtk.repo.jpa.CardInfoRepo;
+
+
+@Service
+public class BalancesupplyManagerImpl extends AbstractDsiCommManager implements BalancesupplyManager{
+	
+	@Autowired
+	private CardInfoRepo cardInfoRepo;
+	@Autowired
+	private CancelledCardDetailRepo cancelledCardDetailRepo;
+	
+	@Autowired
+	private AccountCardBalanceOperateRepo accountCardBalanceOperateRepo;
+	
+	/*@Autowired
+	private ChargeDetailRepo chargeDetailRepo;
+	*/
+	@Autowired
+	private FinanceBinService financeBinService;
+	
+	@Autowired
+	private ReckonBinService reckonBinService;
+	
+	@Autowired
+	private AccountCardBalanceRepo accountCardBalanceRepo;
+	
+	@Autowired
+	private AccountRefundDetailRepo accountRefundDetailRepo;
+	
+	
+	@Override
+	public LargePagination<CardInfo> queryPage(BalancesupplyRequest queryModel)  throws ManagerException{
+		if(queryModel.getVehiclePlate()!=null && queryModel.getVehiclePlateColor()!=null ) {
+			String vehicleId= queryModel.getVehiclePlate()+"_"+queryModel.getVehiclePlateColor();
+			queryModel.setVehicleId(vehicleId);
+		}
+		return cardInfoRepo.largePage(queryModel);
+	}
+
+
+	
+	@Override
+	public CardrechargeResponse cardReplace(BalancesupplyRequest queryModel, User user) throws ManagerException {
+		CardrechargeResponse cardrechargeResponse = new CardrechargeResponse();
+		try {
+			cardrechargeResponse=CardReplace(queryModel,user);
+		} catch (ManagerException e) {
+			e.printStackTrace();
+		}
+		return cardrechargeResponse;
+	}
+	
+
+	
+	@Override 	
+	public CardrechargeResponse cardChargeByCOS(CardrechargeRequest request,User user)  throws ManagerException{
+		CardrechargeResponse  cardrechargeResponse =new CardrechargeResponse();
+		CardChargeByCOS(request,cardrechargeResponse,user);
+		return cardrechargeResponse;
+	}
+	@Override 	
+	public CardrechargeResponse cardChargeConfirmByCOS(CardrechargeRequest request,User user)throws ManagerException{
+		CardrechargeResponse  cardrechargeResponse =new CardrechargeResponse();
+		CardChargeConfirmByCOS(request, cardrechargeResponse,user);
+		return cardrechargeResponse;
+	}
+	
+	@Override
+	public CardrechargeResponse  updateOperateStatus(String  cardId,Integer operateStatus) throws ManagerException {
+		CardrechargeResponse  cardrechargeResponse =new CardrechargeResponse();
+		update(cardId, cardrechargeResponse, operateStatus);
+		return cardrechargeResponse;
+	}
+	
+	public CardrechargeResponse  CardReplace(BalancesupplyRequest request,User user) throws ManagerException  {
+		CardReplaceRequest cardReplaceRequest=new CardReplaceRequest();
+		CardrechargeResponse response = new CardrechargeResponse();
+		super.commSet(cardReplaceRequest,user);
+		String rechargeId = super.generateRechargeId(cardReplaceRequest);
+		cardReplaceRequest.setOldCardId(request.getOldCardId());
+		CardInfo oldCardinfo=cardInfoRepo.findByCardId(request.getOldCardId());
+		CardInfo newCardinfo=cardInfoRepo.findByCardId(request.getNewCardId());
+		AccountCardBalanceOperate accountCardBalanceOperate=accountCardBalanceOperateRepo.findByCardId(request.getOldCardId());
+		CancelledCardDetail cancelledCardDetail = cancelledCardDetailRepo.findByCardId(request.getOldCardId());
+		AccountRefundDetail findByCardId = accountRefundDetailRepo.findByCardId(request.getOldCardId());
+		if(findByCardId!=null) {
+			if(findByCardId.getRefundType().equals(RefundDetailType.YWCTF)||findByCardId.getRefundType().equals(RefundDetailType.ECHDTF)||findByCardId.getRefundType().equals(RefundDetailType.TFYDC) ) {
+				response.setMessage("旧卡退款为"+findByCardId.getRefundType().getValue()+"，无法进行余额补领！");
+				response.setStatus(-1);
+				return response;
+			}
+		}
+		if(oldCardinfo==null) {
+			response.setMessage("旧卡信息不存在!请联系管理员查看此卡信息是否完整或存在！");
+			response.setStatus(-1);
+			return response;
+		}
+		if(newCardinfo==null) {
+			response.setMessage("新卡信息不存在!请联系管理员查看此卡信息是否完整或存在！");
+			response.setStatus(-1);
+			return response;
+		}
+		String oldVehicleId=oldCardinfo.getVehicleId();
+		String newVehicleId=newCardinfo.getVehicleId();
+		if(!newVehicleId.equals(oldVehicleId)) {
+			response.setMessage("旧卡与新卡对应的车牌不一致，无法进行余额补领!");
+			response.setStatus(-1);
+			return response;
+		}
+		if(accountCardBalanceOperate==null) {
+			response.setMessage("该旧卡未销卡,请先销卡再进行余额补领!");
+			response.setStatus(-1);
+			return response;
+		}
+		if(null==cancelledCardDetail) {
+			response.setMessage("该旧卡未销卡,请先销卡再进行余额补领!");
+			response.setStatus(-1);
+			return response;
+		}
+		/*
+		 * if(!cancel30ArgueTime(request.getOldCardId())) {
+		 * response.setMessage("该旧卡未满争议期,请满争议期后再进行余额补领!"); response.setStatus(-1);
+		 * return response; }
+		 */
+		if(accountCardBalanceOperate.getType().equals(AccountCardBalanceOperateType.BALANCE_SUPPLY ) && accountCardBalanceOperate.getOperateStatus()==1) {
+			response.setMessage("该卡已被补领");
+			response.setStatus(-1);
+			return response;
+		}else if(accountCardBalanceOperate.getType().equals(AccountCardBalanceOperateType.BALANCE_SUPPLY) && accountCardBalanceOperate.getOperateStatus()==0) {
+			if(request.getCardStatus()==1) {//有卡
+				cardReplaceRequest.setCardBalance(request.getOldPreBalance());
+				cardReplaceRequest.setCosProvider(1);
+			}else if(request.getCardStatus()==-1){//无卡
+				cardReplaceRequest.setCardBalance(-1L);
+				cardReplaceRequest.setCosProvider(0);
+			}
+		}else {
+			response.setMessage("该卡在注销的时候没有选择余额补领退款方式!请核实!");
+			response.setStatus(-1);
+			return response;
+		}
+		cardReplaceRequest.setNewCardId(request.getNewCardId());
+		//圈存检测
+		try {
+			CardChargeCheckRequest req = new CardChargeCheckRequest();
+			super.commSet(req,user);
+			req.setCardId(request.getNewCardId());
+			req.setFee(request.getOldPreBalance());
+			req.setPreBalance(request.getNewPreBalance());
+			req.setTradeType(4);
+			//不准备调用接口，直接传要补的金额即可
+			CardChargeCheckResponse cardChargeCheckResponse= financeBinService.cardChargeCheckV2(req);
+			response.setRechargeId(rechargeId);
+			response.setCommand(cardChargeCheckResponse.getCommand());
+			response.setMessage(cardChargeCheckResponse.getMessage());
+			response.setChargeStatus(cardChargeCheckResponse.getChargeStatus());
+			response.setStatus(cardChargeCheckResponse.getStatus());
+		} catch (ApiRequestException | IOException e) {
+			e.printStackTrace();
+			throw new ManagerException("余额补领时调用圈存检测异常");
+		}
+		CardAccountReckonResponse rsp=new CardAccountReckonResponse();
+		try {
+			 rsp=cardAccountReckon(request,user);
+			 if(rsp.getStatus()!=1) {
+				 response.setMessage(rsp.getMessage());
+				 response.setStatus(-1);
+			 }
+		} catch (ApiRequestException | IOException e) {
+			e.printStackTrace();
+			response.setMessage(rsp.getMessage());
+		}
+		return response;
+	}
+
+
+
+	//旧卡卡账重算    旧卡无卡账，先传0进行初始化，然后再次调用重算
+	//		          旧卡有卡账，传2进行重算
+	//		          旧卡重算后直接对新卡进行初始化，将旧卡卡账金额传入，并且在初始化新卡卡账成功后将旧卡卡账状态变更为0 
+	private CardAccountReckonResponse cardAccountReckon(BalancesupplyRequest request,User user) throws ApiRequestException, IOException {
+		AccountRefundDetail accountRefundDetail = accountRefundDetailRepo.findByCardId(request.getOldCardId());
+		AccountCardBalance accountCardBalance=accountCardBalanceRepo.findAccountCardBalanceByCardId(request.getOldCardId());
+		
+		CardAccountReckonRequest cardAccountReckonRequest= new CardAccountReckonRequest();
+		super.commSet(cardAccountReckonRequest,user);
+		cardAccountReckonRequest.setCardId(request.getOldCardId());
+		if(accountRefundDetail!=null) {
+			accountRefundDetailRepo.delete(accountRefundDetail);
+		}
+		if(accountCardBalance==null) {
+			cardAccountReckonRequest.setCountType(0);
+		}else {
+			cardAccountReckonRequest.setCountType(2);
+		}
+			CardAccountReckonResponse cardAccountReckonResponse =reckonBinService.cardAccountReckon(cardAccountReckonRequest);
+			if(cardAccountReckonResponse!=null && cardAccountReckonResponse.getStatus()==1 && cardAccountReckonResponse.getPostBalance()>=0) {
+				//上一步进行的不是重算，则传入2，再次调用接口重算
+				if(cardAccountReckonRequest.getCountType()!=2) {  
+					cardAccountReckonRequest.setCountType(2);
+					cardAccountReckonResponse =reckonBinService.cardAccountReckon(cardAccountReckonRequest);
+				}
+				//上一步进行的是重算，初始化新卡卡账
+				if(cardAccountReckonResponse!=null && cardAccountReckonResponse.getStatus()==1 && cardAccountReckonResponse.getPostBalance()>=0) {
+					cardAccountReckonRequest.setCardId(request.getNewCardId());
+					cardAccountReckonRequest.setCountType(0);
+					cardAccountReckonRequest.setReckoncharge(cardAccountReckonResponse.getPostBalance());
+					cardAccountReckonResponse =reckonBinService.cardAccountReckon(cardAccountReckonRequest);
+					//初始化新卡卡账成功后将旧卡卡账状态变更为0 
+					if(cardAccountReckonResponse!=null && cardAccountReckonResponse.getStatus()==1 && cardAccountReckonResponse.getPostBalance()>=0) {
+						accountCardBalance=accountCardBalanceRepo.findAccountCardBalanceByCardId(request.getOldCardId());
+						accountCardBalance.setStatus(0);
+						accountCardBalanceRepo.save(accountCardBalance);
+					}
+				}
+			}
+			return cardAccountReckonResponse;
+	}
+	
+	
+
+	
+	
+	public CardrechargeResponse CardChargeByCOS(CardrechargeRequest request,CardrechargeResponse response,User user) throws ManagerException {
+		CardChargeByCOSRequest cardChargeByCOSRequest=new CardChargeByCOSRequest(); 
+		super.commSet(cardChargeByCOSRequest,user);
+		cardChargeByCOSRequest.setRechargeId(request.getRechargeId());
+		cardChargeByCOSRequest.setCardId(request.getCardId());
+		cardChargeByCOSRequest.setFee(request.getRechargeAmount());
+		cardChargeByCOSRequest.setPreBalance(request.getPreBalance());
+		cardChargeByCOSRequest.setTradeType(4);
+		cardChargeByCOSRequest.setCommand(request.getCommand());
+		cardChargeByCOSRequest.setCosResponse(request.getCosResponse());
+		try {
+			CardChargeByCOSResponse res = financeBinService.cardChargeByCOSV2(cardChargeByCOSRequest);
+			if(res==null) {
+				response.setMessage("圈存申请接口调用失败!");
+				response.setStatus(-1);
+				return response;
+			}
+			if(res.getCommandType()<=0) {
+				response.setMessage(res.getMessage());
+				response.setStatus(-1);
+				return response;
+			}
+			response.setMessage(res.getMessage());
+			response.setCommand(res.getCommand());
+			response.setCommandType(res.getCommandType());
+			response.setStatus(res.getStatus());
+			response.setRechargeId(request.getRechargeId());
+			/*response.setCancelledCardDetailId(request.getCancelledCardDetailId());*/
+		} catch (ApiRequestException | IOException e) {
+			e.printStackTrace();
+			response.setMessage("圈存申请接口调用异常");
+		}
+		return response;
+	}
+	
+	
+	
+	/**
+	 * 圈存确认
+	 * @param 交易流水号  实收金额   赠送金额  圈存指令结果   圈存指令
+	 * @return  充值后金额
+	 * @throws Exception
+	 */
+	public CardrechargeResponse CardChargeConfirmByCOS(CardrechargeRequest request,CardrechargeResponse response,User user) throws ManagerException {
+		//圈存确认参数
+		CardChargeConfirmByCOSRequest cardChargeConfirmByCOSRequest=new CardChargeConfirmByCOSRequest();
+		//圈存确认
+		super.commSet(cardChargeConfirmByCOSRequest,user);
+		cardChargeConfirmByCOSRequest.setRechargeId(request.getRechargeId());
+		cardChargeConfirmByCOSRequest.setPaidAmount(request.getPaidAmount());
+		cardChargeConfirmByCOSRequest.setGiftAmount(request.getGiftAmount());
+		cardChargeConfirmByCOSRequest.setCommand(request.getCommand());
+		cardChargeConfirmByCOSRequest.setCosResponse(request.getCosResponse());
+		try { 
+			CardChargeConfirmByCOSResponse res = financeBinService.cardChargeConfirmByCOS(cardChargeConfirmByCOSRequest);
+			if(res==null) {
+				response.setMessage("圈存确认失败!");
+				response.setStatus(-1);
+				return response;
+			}
+			if(res.getPostBalance()!=null) {
+				response.setPostBalance(res.getPostBalance());
+				response.setStatus(res.getStatus());
+				response.setMessage(res.getMessage());
+			}else {
+				response.setStatus(-1);
+				response.setMessage(res.getMessage());
+			}
+			response.setPostBalance(res.getPostBalance());
+			response.setStatus(res.getStatus());
+			response.setMessage(res.getMessage());
+		} catch (ApiRequestException | IOException e) {
+			e.printStackTrace();
+			response.setMessage("圈存确认接口调用异常");
+		}
+		return response;
+	}
+	
+	
+	public CardrechargeResponse update(String cardId,CardrechargeResponse response,Integer operateStatus) throws ManagerException {
+		AccountCardBalanceOperate	accountCardBalanceOperate =accountCardBalanceOperateRepo.findByCardId(cardId);
+		CancelledCardDetail cancelledCardDetail = cancelledCardDetailRepo.findByCardId(cardId);
+		if(accountCardBalanceOperate.getOperateStatus()==0) {
+			accountCardBalanceOperate.setOperateStatus(operateStatus);;
+			accountCardBalanceOperateRepo.save(accountCardBalanceOperate);
+			if(null!=cancelledCardDetail) {
+				cancelledCardDetail.setReplaceStatus(1);
+				cancelledCardDetailRepo.save(cancelledCardDetail);
+			}
+		}else {
+			response.setMessage("此卡已进行余额补领,无法二次余额补领");
+		}
+		return response;
+
+	}
+	
+
+	@Override
+	public CardInfo findByCardId(String cardId, Model model) throws ManagerException {
+		CardInfo cardInfo=cardInfoRepo.findByCardId(cardId);
+		return cardInfo;
+	}
+
+	
+//	private  boolean cancel30ArgueTime(String cardId) {
+//		LocalDate nowDate = LocalDate.now();
+//		CancelledCardDetail detail = cancelledCardDetailRepo.findByCardId(cardId);
+//		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+//		
+//		LocalDate cancelDate = LocalDate.parse(format.format(detail.getCreateTime().getTime())).plusDays(30); 
+//		return nowDate.compareTo(cancelDate) > 0;
+//	}
+
+}
+

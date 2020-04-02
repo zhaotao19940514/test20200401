@@ -1,0 +1,64 @@
+# -- messages used in decorators/default.jsp --
+webapp.name=黔通卡客服系统
+readonly=不能修改
+reset=重置
+true=是
+false=否
+add=添加
+add.success=添加成功
+add.fail=添加失败
+add.repeat=不能添加重复的值
+save=保存
+addMore=打开详细信息
+hiddenMore=关闭详细信息
+save.success=保存成功
+save.fail=保存失败
+modi=修改
+modi.success=修改成功
+modi.fail=修改失败
+del=删除
+del.success=删除成功
+del.fail=删除失败
+del.fail.note=删除失败:{0}
+
+return=返回
+search=查询
+search.condition=查询条件
+search.result=查询结果
+hidden=隐藏
+show=显示
+select.select=全部
+detail=详细
+
+delete.all=批量删除
+select.all=全选
+close=关闭
+#acl messages
+acl.login=登录
+acl.logout=注销
+acl.relogin=重新登录
+acl.changeuser=切换用户
+acl.password=密&nbsp;&nbsp;码：
+acl.username=用户名：
+acl.oldpass=旧密码：
+acl.newpass1=新密码：
+acl.newpass2=新密码确认：
+acl.remember=&nbsp;&nbsp;记住我
+acl.nouser=用户不存在
+acl.loginerror=Session超时时效
+acl.reachMax=用户到达最大并发数({0}),不允许再登录
+acl.passWrong=密码错误
+
+# -- validator errors --
+errors.invalid=无效
+errors.maxlength=不能大于 {0} 个字符
+errors.minlength=不能少于 {0} 个字符
+errors.phone=无效电话号码
+errors.fax=无效传真号码
+errors.email=无效邮件地址
+errors.zip=无效邮政编码
+errors.required=必填项
+errors.noselect=必选项
+errors.url=无效URL地址
+errors.date=无效的日期格式
+errors.integer=必须为一数值

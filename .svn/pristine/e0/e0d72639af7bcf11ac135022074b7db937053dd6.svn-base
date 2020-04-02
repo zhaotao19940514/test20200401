@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<%@ page contentType="text/html;charset=utf-8"%>
+<%@ include file="/WEB-INF/jsp/include.jsp"%>
+<html>
+	<head>
+		<meta http-equiv="expires" content="0" />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<script src="${rootUrl }plugins/datepicker/4.8/WdatePicker.js" ></script>
+		<script type="text/javascript">
+		$(function(){
+			$.ajaxSetup ({ cache: false});
+			$("#myManageDelete").taiji({
+				enableAclCheck:true,
+				search:{
+					 autoSearch:true
+				}
+			});
+			$("#submit").click(function(){
+				//$("#myForm").trigger("submit");
+				$(".disabledRemove").removeAttr("disabled");
+				$("#myManage").triggerHandler("taijiModalPost",[$("#myForm"),{table:"remove"}]);
+				$(".disabledAdd").attr("disabled", true);
+			});
+			showRemedy();
+			function showRemedy() {
+				var type = $("#type").val();
+				if(type==1 || type==2 || type==3 || type==4){
+					$(".portativePower").hide();
+					$(".carryPassenger").show();
+					$("#refrigeratedTrucks").hide();
+				}
+				if(type==11 || type==12 || type==13 || type==14 || type==15){
+					$(".carryPassenger").hide();
+					$(".portativePower").show();
+					$("#refrigeratedTrucks").show();
+				}
+			}
+
+		});
+		
+		</script>
+		<style type="text/css">
+          .titile{
+          	text-align:right;
+          	font-size: 13px;
+          };
+          .details{
+          	text-align:left;
+          }
+          .caption{
+          		font-size: 15px;
+          		font-weight: bold;
+          		margin: 0px;
+          }
+          .essential{
+          	color: red;
+          }
+     	</style>
+	</head>
+<body>
+
+<div class="modal-header">
+	<button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+	<h4 class="modal-title">删除车辆信息</h4>
+</div>
+<div id="myManageDelete" class="panel panel-inverse">
+<div class="modal-body">
+<form:form modelAttribute="pageModel" id="myForm" name="myForm" cssClass="form-horizontal" action="${rootUrl }app/apply/baseinfo/vehiclemanagement/del" method="post">
+		<div class="form-group">
+			<p class="caption">车辆信息</p>
+			
+			<table border="1">
+				<tr style="display: none;">
+					<td><form:input cssStyle="width:180px" path="customerId" class="form-control"  placeholder="必填"/></td>
+					<td><form:input cssStyle="width:180px" path="vehicleId" class="form-control"  placeholder="必填"/></td>
+					<td colspan="4"><form:input cssStyle="width:180px" path="outsideDimensions" class="form-control" placeholder="必填"/></td>
+				</tr>
+				<tr>
+					<td class="titile"><span class="essential">*</span>车牌号码：</td><td class="details"><form:input cssStyle="width:180px" path="vehiclePlate" id="vehiclePlate" readonly="true" class="dataChange form-control" maxlength="9" placeholder="必填"/></td>
+					<td class="titile"><span class="essential">*</span>车牌颜色：</td><td class="details">
+										<form:select path="vehiclePlateColor" id="vehiclePlateColor" disabled="true" cssClass="disabledRemove disabledAdd form-control m-r-5" data-style="btn-white" data-width="120px">
+											<form:option value="">--请选择--</form:option>
+											<form:options items="${vehiclePlateColorTypes}" itemLabel="value" itemValue="typeCode"/>
+										</form:select></td>
+					<td class="titile">使用性质：</td><td class="details">
+										<form:select path="useCharacter" disabled="true" cssClass="disabledRemove disabledAdd form-control m-r-5" data-style="btn-white" data-width="120px">
+											<form:option value="">--请选择--</form:option>
+											<form:options items="${vehicleUseCharacters}" itemLabel="value" itemValue="typeCode"/>
+										</form:select></td>
+				</tr>
+				<tr>
+					<td class="titile"><span class="essential">*</span>客货类别：</td><td class="details">
+										<form:select path="vehicleType" id="vehicleType" disabled="true" cssClass="disabledRemove disabledAdd form-control m-r-5" data-style="btn-white" data-width="120px">
+											<form:option value="">--请选择--</form:option>
+											<form:options items="${vehicleTypeSimples}" itemLabel="value" itemValue="typeCode"/>
+										</form:select></td>
+					<td class="titile" ><span class="carryPassenger"><span class="essential">*</span>核定座位数：</span><span class="portativePower" style="display: none;"><span class="essential">*</span>核定载重(kg)：</span></td>
+					<td class="details" ><span class="carryPassenger"><form:input id="approvedCount" path="approvedCount" readonly="true" cssStyle="width:180px" class="form-control" maxlength="3" placeholder="必填"/></span>
+										<span class="portativePower" style="display: none;"><form:input id="permittedWeight" path="permittedWeight" readonly="true" cssStyle="width:180px" class="form-control" maxlength="6" placeholder="必填"/></span></td>
+					<td class="titile"><span class="essential">*</span>车型：</td><td class="details">
+										<select name="type" id="type" disabled="disabled" class="disabledRemove disabledAdd form-control">
+											<c:choose>
+												<c:when test="${pageModel.type eq 1 }"><option value="1">一型客车</option></c:when>
+												<c:when test="${pageModel.type eq 2 }"><option value="2">二型客车</option></c:when>
+												<c:when test="${pageModel.type eq 3 }"><option value="3">三型客车</option></c:when>
+												<c:when test="${pageModel.type eq 4 }"><option value="4">四型客车</option></c:when>
+												<c:when test="${pageModel.type eq 11 }"><option value="11">一型货车</option></c:when>
+												<c:when test="${pageModel.type eq 12 }"><option value="12">二型货车</option></c:when>
+												<c:when test="${pageModel.type eq 13 }"><option value="13">三型货车</option></c:when>
+												<c:when test="${pageModel.type eq 14 }"><option value="14">四型货车</option></c:when>
+												<c:when test="${pageModel.type eq 15 }"><option value="15">五型货车</option></c:when>
+											</c:choose>
+										</select></td>
+				</tr>
+				<tr id="refrigeratedTrucks">
+					<td class="titile"  ><span class="portativePower">*</span>货车是否为冷藏运输：</td>
+					<td class="details" >
+							<form:select path="refrigeratedTrucks" id="refrigeratedTrucks" cssClass="form-control m-r-5" data-style="btn-white" data-width="120px">
+								<form:option value="">--请选择--</form:option>
+								<form:options items="${carType}" itemLabel="value" itemValue="code"/>
+							</form:select>
+					</td>
+				</tr>
+				<tr>
+					<td class="titile">品牌型号：</td><td class="details"><form:input path="vehicleModel" readonly="true" cssStyle="width:180px" class="form-control" maxlength="50" /></td>
+					<td class="titile">车辆识别代号：</td><td class="details"><form:input path="VIN" readonly="true" cssStyle="width:180px" class="form-control" maxlength="50" placeholder="必填"/></td>
+					<td class="titile">发动机号：</td><td class="details"><form:input path="engineNum" readonly="true" cssStyle="width:180px" class="form-control" maxlength="50" /></td>
+				</tr>
+				<tr>
+					<td class="titile">行驶证注册日期：</td><td class="details">
+						<div class="form-inline">
+							<form:input cssStyle="width:140px" path="registerDate"
+								readonly="true" cssClass="form-control" />
+							<button type="button" class="btn btn-default form-control"
+								onclick="WdatePicker({el:$dp.$('registerDate'),dateFmt:'yyyy-MM-dd',maxDate:'#F{$dp.$D(\'issueDate\')}'});">
+								<i class="fa fa-calendar"></i></button>
+						</div></td>
+					<td class="titile">行驶证发证日期：</td><td class="details">
+						<div class="form-inline">
+							<form:input cssStyle="width:140px" path="issueDate"
+								readonly="true" cssClass="form-control" />
+							<button type="button" class="btn btn-default form-control"
+								onclick="WdatePicker({el:$dp.$('issueDate'),dateFmt:'yyyy-MM-dd',minDate:'#F{$dp.$D(\'registerDate\')}'});">
+								<i class="fa fa-calendar"></i></button>
+					 	</div></td>
+					<td class="titile">档案编号：</td><td class="details"><form:input path="fileNum" readonly="true" cssStyle="width:180px" class="form-control" maxlength="50" /></td>
+				</tr>
+				<tr>
+					<td class="titile">所有人名称：</td><td class="details"><form:input path="ownerName" readonly="true" cssStyle="width:180px" class="form-control" maxlength="50" /></td>
+					<td class="titile">所有人证件类型：</td><td class="details">
+										<form:select path="ownerIdType" disabled="true" cssClass="disabledRemove disabledAdd form-control m-r-5" style="width:175px">
+											<form:option value="">--请选择--</form:option>
+											<form:options items="${customerIDTypes}" itemLabel="value" itemValue="typeCode"/>
+										</form:select></td>
+					<td class="titile">所有人证件号码：</td><td class="details"><form:input path="ownerIdNum" readonly="true" cssStyle="width:180px" class="form-control" maxlength="30" /></td>
+				</tr>
+				<tr>
+					<td class="titile">所有人联系方式：</td><td class="details"><form:input path="ownerTel" readonly="true" cssStyle="width:180px" class="form-control" maxlength="20" /></td>
+					<td class="titile">所有人联系地址：</td><td class="details"><form:input path="ownerAddress" readonly="true" cssStyle="width:180px" class="form-control" maxlength="100" /></td>
+					<td class="titile"><span class="essential">*</span>指定联系人姓名：</td><td class="details"><form:input path="contacts" readonly="true" cssStyle="width:180px" class="form-control" maxlength="50" placeholder="必填"/></td>
+				</tr>
+				<tr>
+					<td class="titile">总质量(kg)：</td><td class="details"><form:input path="totalMass" readonly="true" cssStyle="width:180px" class="form-control" maxlength="6" /></td>
+					<td class="titile">整备质量(kg)：</td><td class="details"><form:input path="maintenanceMass" readonly="true" cssStyle="width:180px" class="form-control" maxlength="6" /></td>
+					<td class="titile">牵引总质量(kg)：</td><td class="details"><form:input path="permittedTowWeight" readonly="true" cssStyle="width:180px" class="form-control" maxlength="6" /></td>
+				</tr>
+				<tr>
+					<td class="titile" rowspan="2">检验记录：</td><td class="details" rowspan="2"><form:textarea path="testRecord" readonly="true" style="height:70px" class="form-control" maxlength="120"/></td>
+					<td class="titile">轴型：</td><td class="details"><form:input path="axisType" readonly="true" cssStyle="width:180px" class="form-control" maxlength="30" /></td>
+					<td class="titile">车轴数：</td><td class="details"><form:input path="axleCount" readonly="true" cssStyle="width:180px" class="form-control" maxlength="2" /></td>
+				</tr>
+				<tr>
+					<td class="titile">轴距(mm)：</td><td class="details"><form:input path="axleDistance" readonly="true" cssStyle="width:180px" class="form-control" maxlength="5" /></td>
+					<td class="titile">车轮数：</td><td class="details"><form:input path="wheelCount" readonly="true" cssStyle="width:180px" class="form-control" maxlength="3" /></td>
+				</tr>
+				<tr>
+					<td class="titile">车长(mm)：</td><td class="details"><form:input path="vehicleLength" readonly="true" cssStyle="width:180px" class="form-control" maxlength="5" /></td>
+					<td class="titile">车宽(mm)：</td><td class="details"><form:input path="vehicleWidth" readonly="true" cssStyle="width:180px" class="form-control"  maxlength="5" /></td>
+					<td class="titile">车高(mm)：</td><td class="details"><form:input path="vehicleHeight" readonly="true" cssStyle="width:180px" class="form-control" maxlength="5" /></td>
+				</tr>
+				<tr>
+					<td class="titile">行驶证照片：</td><td class="details" colspan="2"><a href="${rootUrl }app/apply/baseinfo/vehiclemanagement/viewOne/${pageModel.id }" class="taiji_modal_lg taiji_acl btn  btn-success">查看</a></td>
+					<td class="titile">车辆照片：</td><td class="details" colspan="2"><a href="${rootUrl }app/apply/baseinfo/vehiclemanagement/viewTwo/${pageModel.id }" class="taiji_modal_lg taiji_acl btn  btn-success">查看</a></td>
+				</tr>
+			</table>
+			</div>
+</form:form>
+
+</div>
+</div>
+<div class="modal-footer">
+	<a href="#" class="btn btn-sm btn-white" data-dismiss="modal">关闭</a>
+	<a href="#" class="btn btn-sm btn-success"  id="submit">确认删除</a>
+</div>
+
+</body>
+</html>

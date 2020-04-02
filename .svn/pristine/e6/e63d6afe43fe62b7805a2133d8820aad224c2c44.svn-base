@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<%@ page contentType="text/html;charset=utf-8"%>
+<!--[if IE 8]> <html lang="en" class="ie8"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="en">
+<!--<![endif]-->
+<head>
+<%@ include file="/WEB-INF/jsp/assets.jsp" %>
+<script type="text/javascript" src="${rootUrl }plugins/datepicker/4.8/WdatePicker.js" ></script>
+<script type="text/javascript">
+$(function(){
+	$.ajaxSetup({cache : false});
+	$("#myManage").taiji({
+		enableAclCheck:true,
+		search:{
+			 autoSearch:false
+		}
+	});
+	//setdate();
+	
+	$("#my-table").on("click","#confirmBtn",function(){
+		var cardId = $(this).attr("param");
+		var refundType = $(this).attr("refundType");
+	});
+	$("#my-table").on('click','#littleRefund',function(){
+		var refundCardId = $(this).attr("refundCardId");
+		var cardBalance = $(this).attr("cardBalance");
+		var accountCardBalance = $(this).attr("accountCardBalance");
+		$.Taiji.defConfirm("你确定要以较小金额退款？").done(function(){
+			byLittleRefund(rowCardId,cardBalance,accountCardBalance);
+		});
+	});
+	
+	$("#my-table").on('click','#confirmRefund',function(){
+		var refundCardId = $(this).attr("refundCardId");
+		var refundType = $(this).attr("refundType");
+		console.log(refundType);
+		if(refundType=='WTJTF'){
+			$.Taiji.showWarn("请先提交退费金额");
+			return;
+		}
+		if(refundType=='YTJTF'){
+			$.Taiji.defConfirm("确定该笔退款金额无误？").done(function(){
+				confirmBalance(refundCardId,2);
+			});
+		}else{
+			$.Taiji.showWarn("退款状态为已退款才能进行确认操作");
+		}
+		
+	});
+	$("#my-table").on('click','#compleRefund',function(){
+		var refundCardId = $(this).attr("refundCardId");
+		var refundType = $(this).attr("refundType");
+		console.log(refundType);
+		if(refundType=='YTJTF'){
+			$.Taiji.defConfirm("确定退款成功吗？").done(function(){
+				confirmBalance(refundCardId,3);
+			});
+		}else{
+			$.Taiji.showWarn("业务失败:请先提交退款");
+		}
+		
+	});
+	
+	
+});
+
+/* function confirmRefund(confirmRefund){
+	var data={};
+	data.refundCardId = refundCardId;
+	data.cardBalance = cardBalance;
+	data.accountCardBalance = accountCardBalance;
+	$.Taiji.showLoading($.Taiji.Messages.MSG_OPERATE);
+	$.ajax({
+	      url : rootUrl+"app/customerservice/finance/cardrefundconfirm/confirmRefund",
+	      type : "POST",
+	      dataType : "json",
+	      data:JSON.stringify(data),
+	      contentType: "application/json",
+	      async:true,
+	      success : function(responseText) {
+	    	  if(responseText.status==1){
+	    		  $.Taiji.showNote(responseText.message); 
+	    	  }else{
+	    		  $.Taiji.showWarn(responseText.message);
+	    	  }
+	      },
+	      error:function(responseText){
+	      	$.Taiji.showWarn(responseText.message);
+	      	$.Taiji.hideLoading();
+	      }
+	});
+} */
+
+function byLittleRefund(refundCardId,cardBalance,accountCardBalance){
+	var data={};
+		data.refundCardId = refundCardId;
+		data.cardBalance = cardBalance;
+		data.accountCardBalance = accountCardBalance;
+	$.Taiji.showLoading($.Taiji.Messages.MSG_OPERATE);
+	$.ajax({
+	      url : rootUrl+"app/customerservice/finance/cardrefundconfirm/byLittleRefund",
+	      type : "POST",
+	      dataType : "json",
+	      data:JSON.stringify(data),
+	      contentType: "application/json",
+	      async:true,
+	      success : function(responseText) {
+	    	  
+	      },
+	      error:function(responseText){
+	      	$.Taiji.showWarn(responseText.message);
+	      	$.Taiji.hideLoading();
+	      }
+	});
+}
+
+function confirmBalance(cardId,refundType){
+	$.Taiji.showLoading($.Taiji.Messages.MSG_OPERATE);
+	var data = {};
+		data.refundCardId = cardId;
+		data.refundType	= refundType;
+	$.ajax({
+	      url : rootUrl+"app/customerservice/finance/cardrefundconfirm/confirmBalance",
+	      type : "POST",
+	      dataType : "json",
+	      data:JSON.stringify(data),
+	      contentType: "application/json",
+	      async:true,
+	      success : function(responseText) {
+	    	  $.Taiji.hideLoading();
+	    	  if(responseText.status==1){
+	    		  $.Taiji.showNote(responseText.message);
+	    		  $("#searchBtn").click();
+	    	  }else{
+	    		  $.Taiji.showWarn(responseText.message);
+	    	  }
+	      },
+	      error:function(responseText){
+	      	$.Taiji.showWarn(responseText.message);
+	      	$.Taiji.hideLoading();
+	      }
+	});
+}
+ //日期框添加默认值
+function  setdate(){
+    var sd=new Date();
+    sd.setMonth(sd.getMonth()+1-2);
+    var sy=sd.getFullYear();
+    var sm = sd.getMonth();
+    var sdd=sd.getDate();
+    if(sm==0){
+    	sy = sy-1;
+    	sm=12;
+    }
+    if (sm >= 1 && sm <= 9) {
+        sm = "0" + sm;
+    }
+    if (sdd >= 0 && sdd <= 9) {
+        sdd = "0" + sdd;
+    }
+
+    var ed=new Date();
+    console.log(ed.getFullYear());
+    ed.setMonth(ed.getMonth()+1-1);
+    var ey=ed.getFullYear();
+    var em = ed.getMonth();
+    var edd=ed.getDate();
+    if(em==0){
+    	ey=ey-1;
+    	em=12;
+    }
+    if (em >= 1 && em <= 9) {
+        em = "0" + em;
+    }
+    if (edd >= 0 && edd <= 9) {
+        edd = "0" + edd;
+    }
+    $("#beforeDate").val(sy+"-"+sm+"-"+sdd);
+    $("#afterDate").val(ey+"-"+em+"-"+edd);
+} 
+</script>
+
+</head>
+<body>
+	<div id="page-loader" class="fade in"><span class="spinner"></span></div>
+<!-- begin #page-container -->
+	<div id="page-container" class="fade">
+		<!-- begin #header -->
+		<%@ include file="/WEB-INF/jsp/header.jsp" %>
+		<!-- end #header -->
+		
+		<!-- begin #sidebar -->
+		<%@ include file="/WEB-INF/jsp/sidebar.jsp" %>
+		<!-- end #sidebar -->
+		
+		<!-- begin #content -->
+		<div id="content" class="content">
+			<ol class="breadcrumb pull-right">
+			</ol>
+			
+			<!-- begin row -->
+			<div class="row">
+			    <!-- begin col-12 -->
+			    <div class="col-md-12">
+			        <!-- begin panel -->
+                    <div id="myManage" class="panel panel-inverse">
+                        <div class="panel-heading">
+                            <div class="panel-heading-btn">
+                                <a href="javascript:;" class="btn btn-xs btn-icon btn-circle btn-default" data-click="panel-expand"><i class="fa fa-expand"></i></a>
+                                <a href="javascript:;" class="btn btn-xs btn-icon btn-circle btn-success" data-click="panel-reload"><i class="fa fa-repeat"></i></a>
+                                <a href="javascript:;" class="btn btn-xs btn-icon btn-circle btn-warning" data-click="panel-collapse"><i class="fa fa-minus"></i></a>
+                                <a href="javascript:;" class="btn btn-xs btn-icon btn-circle btn-danger" data-click="panel-remove"><i class="fa fa-times"></i></a>
+                            </div>
+                            <h4 class="panel-title">卡账退款确认</h4>
+                        </div>
+                        <div class="panel-body">
+                        	<form:form modelAttribute="queryModel" cssClass="taiji_search_form form-inline m-t-5 " id="listForm" name="listForm" action="${rootUrl }app/customerservice/finance/cardrefundconfirm/manage" method="POST">
+								<div class="form-group">
+									<form:input path="cardId"  maxlength="100"  cssClass="form-control"  placeholder="卡号" />
+								</div>
+								<button class="taiji_search_submit btn btn-md btn-success m-r-5 btn btn-primary btn-small" id="searchBtn" type="button" ><i class="fa fa-search  m-r-10 "></i>查询</button>
+								<button class="taiji_search_reset btn btn-md btn-default btn btn-primary btn-small" type="button"><i class="fa  fa-refresh  m-r-10  "></i>重置</button>
+                        	</form:form>
+                        </div>
+						<div   class="taiji_search_result table-responsive">
+							<table id="my-table" class="table table-bordered  table-hover">
+								<thead>
+									<tr>
+										<th>序号</th>
+										<th>卡号</th>
+										<th>退款状态</th>
+										 <th>注销时间</th>
+										<th>卡账余额(元)</th>
+										<th>卡内余额(元)</th>
+										<th>交易后余额(元)</th>
+										<c:if test="${jhFlag==true }">
+											<th>充值未圈存金额(元)</th>
+										</c:if>
+										<th>退费金额(元)</th>
+										<th>操作</th>
+									</tr>
+								</thead>
+								<tbody>
+								</tbody>
+							</table>
+						</div>
+						<div class="panel-footer text-right">
+							<div class="pageturn taiji_pager">
+	                        </div>
+	                       
+             		  </div>
+					</div>
+                    <!-- end panel -->
+			    </div>
+			    <!-- end col-12 -->
+			</div>
+			<!-- end row -->
+		</div>
+		<!-- end #content -->
+		
+					
+		<!-- begin scroll to top btn -->
+		<a href="javascript:;" class="btn btn-icon btn-circle btn-success btn-scroll-to-top fade" data-click="scroll-top"><i class="fa fa-angle-up"></i></a>
+		<!-- end scroll to top btn -->
+	</div>
+	<!-- end page container -->
+
+</body>
+</html>

@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<%@ page contentType="text/html;charset=utf-8"%>
+<!--[if IE 8]> <html lang="en" class="ie8"> <![endif]-->
+<!--[if !IE]><!-->
+<html lang="en">
+<!--<![endif]-->
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<%@ include file="/WEB-INF/jsp/assets.jsp" %>
+<%@include file="/WEB-INF/jsp/deviceInclude/obuDeviceHeader.jsp"%>
+<script type="text/javascript">
+$(function(){
+	$("#myManage").taiji({
+		enableAclCheck:true,
+		search:{
+			autoSearch:true
+		}
+	});
+	$("#readObu").click(function(){
+		var reader = new ObuOfflineReader();
+		reader.openObuDev();
+		reader.readFullSysInfo();
+		console.log(reader.readFullVehicleInfo());
+// 		var serviceProviderId = reader.readServiceProviderId();
+// 		$("#serviceProviderId").text(serviceProviderId);
+// 		console.log(serviceProviderId);
+		var contractType = reader.readContractType();
+		$("#contractType").text(contractType);
+		console.log(contractType);
+		var contractVersion = reader.readContractVersion();
+		$("#contractVersion").text(contractVersion);
+		console.log(contractVersion);
+		var contractSerialNo = reader.readContractSerialNo();
+		$("#contractSerialNo").text(contractSerialNo);
+		console.log(contractSerialNo);
+		var contractEnableTime = reader.readContractEnableTime();
+		$("#contractEnableTime").text(contractEnableTime);
+		console.log(contractEnableTime);
+		var contractExpireTime = reader.readContractExpireTime();
+		$("#contractExpireTime").text(contractExpireTime);
+		console.log(contractExpireTime);
+// 		var loadStatus = reader.readLoadStatus();
+// 		$("#loadStatus").text(loadStatus);
+// 		console.log(loadStatus);
+		var plateNum = reader.readPlateNum();
+		$("#plateNum").text(plateNum);
+	    var plateColor  = reader.readPlateColor();
+	    if(plateColor==00){
+			$("#plateColor").text("蓝色");
+		}else if(plateColor==01){
+			$("#plateColor").text("黄色");
+		}else if(plateColor==02){
+			$("#plateColor").text("黑色");
+		}else if(plateColor==03){
+			$("#plateColor").text("白色");
+		}else if(plateColor==04){
+			$("#plateColor").text("渐变绿色");
+		}else if(plateColor==05){
+			$("#plateColor").text("黄绿双拼色");
+		}else if(plateColor==06){
+			$("#plateColor").text("蓝白渐变色");
+		}else if(plateColor==09){
+			$("#plateColor").text("未确定");
+		}
+		
+		
+		
+//		1位数字
+//		一型客车	1
+//		二型客车	2
+//		三型客车	3
+//		四型客车	4
+//		一型货车	11
+//		二型货车	12
+//		三型货车	13
+//		四型货车	14
+//		五型货车	15
+		var vehicleType = reader.readVehicleType();
+		 if(vehicleType==1){
+				$("#vehicleType").text("一型客车");
+			}
+		 if(vehicleType==2){
+				$("#vehicleType").text("二型客车");
+			}
+		 if(vehicleType==3){
+				$("#vehicleType").text("三型客车");
+			}
+		 if(vehicleType==4){
+				$("#vehicleType").text("四型客车");
+			}
+		 if(vehicleType==11){
+				$("#vehicleType").text("一型货车");
+			}
+		 if(vehicleType==12){
+				$("#vehicleType").text("二型货车");
+			}
+		 if(vehicleType==13){
+				$("#vehicleType").text("三型货车");
+			}
+		 if(vehicleType==14){
+				$("#vehicleType").text("四型货车");
+			}
+		 if(vehicleType==15){
+				$("#vehicleType").text("五型货车");
+			}
+		console.log(vehicleType);
+		var userType = reader.readUserType();
+		 if(userType==1){
+				$("#userType").text("个人用车");
+			}
+		 if(userType==2){
+				$("#userType").text("单位用车");
+			}
+		console.log(userType);
+		var vehicleLength = reader.readVehicleLength();
+		$("#vehicleLength").text(vehicleLength);
+		console.log(vehicleLength);
+		var vehicleWidth = reader.readVehicleWidth();
+		$("#vehicleWidth").text(vehicleWidth);
+		console.log(vehicleWidth);
+		var vehicleHeight = reader.readVehicleHeight();
+		$("#vehicleHeight").text(vehicleHeight);
+		console.log(vehicleHeight);
+		var wheelsCount = reader.readWheelsCount();
+		$("#wheelsCount").text(wheelsCount);
+		console.log(wheelsCount);
+		var axlesCount = reader.readAxlesCount();
+		$("#axlesCount").text(axlesCount);
+		console.log(axlesCount);
+		var wheelBase = reader.readWheelBase();
+		$("#wheelBase").text(wheelBase);
+		console.log(wheelBase);
+		var loadOrSeat = reader.readLoadOrSeat();
+		$("#loadOrSeat").text(loadOrSeat);
+		console.log(loadOrSeat);
+		var vehicleFeature = reader.readVehicleFeature();
+		$("#vehicleFeature").text(vehicleFeature);
+		console.log(vehicleFeature);
+		var engineNum = reader.readEngineNum();
+		$("#engineNum").text(engineNum);
+		console.log(engineNum);
+		reader.closeObuDev();
+		//if(serviceProviderId!=null) read.style.display='block';
+	});
+	
+	
+});
+</script>
+
+</head>
+<body>
+	<div id="page-loader" class="fade in"><span class="spinner"></span></div>
+<!-- begin #page-container -->
+	<div id="page-container" class="fade">
+		<!-- begin #header -->
+		<%@ include file="/WEB-INF/jsp/header.jsp" %>
+		<!-- end #header -->
+		
+		<!-- begin #sidebar -->
+		<%@ include file="/WEB-INF/jsp/sidebar.jsp" %>
+		<!-- end #sidebar -->
+		
+		<!-- begin #content -->
+		<div id="content" class="content">
+			<ol class="breadcrumb pull-right">
+			</ol>
+			
+			<!-- begin row -->
+			<div class="row">
+			    <!-- begin col-12 -->
+			    <div class="col-md-12">
+			        <!-- begin panel -->
+                    <div id="myManage" class="panel panel-inverse">
+                        <div class="panel-heading">
+                            <div class="panel-heading-btn">
+                                <a href="javascript:;" class="btn btn-xs btn-icon btn-circle btn-default" data-click="panel-expand"><i class="fa fa-expand"></i></a>
+                                <a href="javascript:;" class="btn btn-xs btn-icon btn-circle btn-success" data-click="panel-reload"><i class="fa fa-repeat"></i></a>
+                                <a href="javascript:;" class="btn btn-xs btn-icon btn-circle btn-warning" data-click="panel-collapse"><i class="fa fa-minus"></i></a>
+                                <a href="javascript:;" class="btn btn-xs btn-icon btn-circle btn-danger" data-click="panel-remove"><i class="fa fa-times"></i></a>
+                            </div>
+                            <h4 class="panel-title">读OBU</h4>
+                        </div>
+                        <div class="panel-body">
+								<div class="form-group">
+									<button id="readObu" class="btn btn-md btn-success m-r-5" type="button" ><i class="fa fa-credit-card   m-r-10 "></i>读OBU</button>
+									
+									<br>
+									<div class="panel-body">
+										<div class="row"> 
+											<!-- <div class="col-md-1">
+											<span style="font-weight: bold;"> 服务提供商编号:</span>
+											</div>
+											<div class="col-md-2">
+											<span id="serviceProviderId"></span>
+											</div> -->
+											<div class="col-md-1">
+											<span style="font-weight: bold;"> 协约类型:</span>
+											</div>
+											<div class="col-md-2">
+											<span id="contractType"></span>
+											</div>
+											<div class="col-md-1">
+											<span style="font-weight: bold;"> 合同版本号:</span>
+											</div>
+											<div class="col-md-2">
+											<span id="contractVersion"></span>
+											</div>
+											<div class="col-md-1">
+											<span style="font-weight: bold;"> 合同序列号:</span>
+											</div>
+											<div class="col-md-2">
+											<span id="contractSerialNo"></span>
+											</div>
+										</div>
+									<div class="row"> 
+										<div class="col-md-1">
+										<span style="font-weight: bold;"> 合同生效时间:</span>
+										</div>
+										<div class="col-md-2">
+										<span id="contractEnableTime"></span>
+										</div>
+										<div class="col-md-1">
+										<span style="font-weight: bold;"> 合同失效时间:</span>
+										</div>
+										<div class="col-md-2">
+										<span id="contractExpireTime"></span>
+										</div>
+										<div class="col-md-1">
+										<span style="font-weight: bold;"> 用户类型:</span>
+										</div>
+										<div class="col-md-2">
+										<span id="userType"></span>
+										</div>
+									</div>
+									<div class="row"> 
+										<!-- <div class="col-md-2">
+										<span style="font-weight: bold;"> 拆卸状态:</span>
+										</div> 
+										<div class="col-md-2">
+										<span id="loadStatus"></span>
+										</div>-->
+										<div class="col-md-1">
+										<span style="font-weight: bold;"> 车牌号:</span>
+										</div>
+										<div class="col-md-2">
+										<span id="plateNum"></span>
+										</div>
+										<div class="col-md-1">
+										<span style="font-weight: bold;"> 车牌颜色:</span>
+										</div>
+										<div class="col-md-2">
+										<span id="plateColor"></span>
+										</div>
+										
+										<div class="col-md-1">
+										<span style="font-weight: bold;"> 车辆类型:</span>
+										</div>
+										<div class="col-md-2">
+										<span id="vehicleType"></span>
+										</div>
+									</div>
+									<div class="row"> 
+										<div class="col-md-1">
+										<span style="font-weight: bold;"> 车辆特征:</span>
+										</div>
+											<div class="col-md-2">
+										<span id="vehicleFeature"></span>
+										</div>
+										<div class="col-md-1">
+										<span style="font-weight: bold;"> 发动机编号:</span>
+										</div>
+										<div class="col-md-2">
+										<span id="engineNum"></span>
+										</div>
+										<div class="col-md-1">
+										<span style="font-weight: bold;"> 车宽(单位 分米):</span>
+										</div>
+										<div class="col-md-2">
+										<span id="vehicleWidth"></span>
+										</div>
+									</div>
+									<div class="row"> 
+										<div class="col-md-1">
+										<span style="font-weight: bold;">  车高(单位 分米):</span>
+										</div>
+										<div class="col-md-2">
+										<span id="vehicleHeight"></span>
+										</div>
+										<div class="col-md-1">
+										<span style="font-weight: bold;"> 车长(单位 分米):</span>
+										</div>
+										<div class="col-md-2">
+										<span id="vehicleLength"></span>
+										</div>
+										<div class="col-md-1">
+										<span style="font-weight: bold;"> 车轴数:</span>
+										</div>
+										<div class="col-md-2">
+										<span id="axlesCount"></span>
+										</div>
+									</div>
+									<div class="row"> 
+										<div class="col-md-1">
+										<span style="font-weight: bold;"> 轴距(单位 分米):</span>
+										</div>
+										<div class="col-md-2">
+										<span id="wheelBase"></span>
+										</div>
+										<div class="col-md-1">
+										<span style="font-weight: bold;"> 载重/座位数:</span>
+										</div>
+										<div class="col-md-2">
+										<span id="loadOrSeat"></span>
+										</div>
+										
+										<div class="col-md-1">
+										<span style="font-weight: bold;"> 车轮数:</span>
+										</div>
+										<div class="col-md-2">
+										<span id="wheelsCount"></span>
+										</div>
+									</div>
+									<div class="row">
+										<span style="font-weight: bold; color: red">注:由于设备限制,车辆特征只能显示八位</span>
+									</div>
+									</div>
+								</div>
+                        </div>
+					</div>
+                    <!-- end panel -->
+			    </div>
+			    <!-- end col-12 -->
+			</div>
+			<!-- end row -->
+		</div>
+		<!-- end #content -->
+		
+					
+		<!-- begin scroll to top btn -->
+		<a href="javascript:;" class="btn btn-icon btn-circle btn-success btn-scroll-to-top fade" data-click="scroll-top"><i class="fa fa-angle-up"></i></a>
+		<!-- end scroll to top btn -->
+	</div>
+	<!-- end page container -->
+
+</body>
+</html>

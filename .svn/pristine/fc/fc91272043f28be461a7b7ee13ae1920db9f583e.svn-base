@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<%@ page contentType="text/html;charset=utf-8"%>
+<%@ include file="/WEB-INF/jsp/include.jsp"%>
+<html>
+<head>
+<script>
+	$(function() {
+		$.ajaxSetup ({ cache: false});
+		$('.modal-footer').taiji();
+		$("#submit").click(function() {
+			$("#myManage").triggerHandler("taijiModalPost", [ $("#addForm"), {
+				table : "add"
+			} ]);
+		});
+		 $("#c").keyup(function(){
+				jisuan(this);
+			});
+		 $("#d").keyup(function(){
+				jisuan(this);
+			}); 
+		 $("#endId").keyup(function(){
+				jisuan(this);
+			}); 
+	});
+	function setServiceHallValue(id, name) {
+		$("#serviceHall\\.id").val(id);
+		$("#serviceHall\\.name").val(name);
+	}
+	  function jisuan(obj) { 
+		    obj.value = obj.value.replace(/[^\d]/g,"");  //清除“数字”和“.”以外的字符  
+		   	var maxCount = 10000;
+		    var inBoundNum =  $("#c").val().toString();
+			if(inBoundNum>maxCount){
+				 $.Taiji.showWarn('一次最多10000'); 
+				 inBoundNum =$("#c").val(maxCount);
+			}
+			if(inBoundNum<=0||inBoundNum.value ==""){
+				inBoundNum =$("#c").val("");
+			}
+			if(startId ==null||startId*1==0){
+				$("#endId").val(""); 
+			}
+		}  
+	 	$(":input[name='endId']").click(function() {
+			 var inBoundNum =  $("#c").val();
+			 var startId = $("#d").val();
+			 var url = '${rootUrl }';
+			if(inBoundNum == null || inBoundNum == "" || inBoundNum == "NaN"||startId == null || startId == "" || startId == "NaN"){
+				$.Taiji.showWarn("请先输入起始编号和数量");
+			}else{
+				var data = {};
+				data.startId = startId;
+				data.inBoundNum = inBoundNum;
+				$.ajax({
+					url:url+"app/administration/inventory/devicewarehousing/obu/adda",
+					data:JSON.stringify(data),
+					type:"POST",
+					contentType : 'application/json',
+			        dataType : 'json',
+					success:function(response){
+						console.log(response);
+						if(response.endId != null && response.endId != undefined){
+							var endId = response.endId;
+							$("#endId").val(endId); 
+							/* $.Taiji.showNote("通过！"); */
+		            	}else{
+			            	$.Taiji.showWarn(response.message+"失败！");
+		            	}
+					},
+					error:function(error){
+						console.log(error);
+						$.Taiji.showWarn('卡起始编号错误！');
+					}
+				});
+			}
+		}); 
+</script>
+</head>
+<body>
+
+	<div class="modal-header">
+		<button type="button" class="close" data-dismiss="modal"
+			aria-hidden="true">×</button>
+		<h4 class="modal-title">新增电子标签入库信息--添加</h4>
+	</div>
+	<div class="modal-body">
+		<form:form modelAttribute="pageModel" id="addForm" name="addForm"
+			cssClass="form-horizontal"
+			action="${rootUrl }app/administration/inventory/devicewarehousing/obu/add"
+			method="post">
+			<%-- <div class="form-group">
+				<label class="col-sm-2 control-label">入库单编号</label>
+				<div class="col-sm-6">
+					<div class="input-group" style="width: 280px">
+						<form:input path="batchId" required="required"
+							cssClass="form-control" placeholder="入库单编号必填" readonly="true" />
+					</div>
+				</div>
+			</div> --%>
+			<div class="form-group">
+				<label class="col-sm-2 control-label">业务员</label>
+				<div class="col-sm-6">
+					<div class="input-group" style="width: 280px">
+						<form:input path="userName" required="required"
+							cssClass="form-control" placeholder="业务员" readonly="true"/>
+					</div>
+				</div>
+			</div> 
+			<%-- <div class="form-group">
+				<label class="col-sm-2 control-label">所属网点</label>
+				<div class="col-sm-10">
+					<div class="input-group" style="width: 280px">
+						<form:hidden path="serviceHall.id" />
+						<form:input path="serviceHall.name" cssClass="form-control"
+							placeholder="请选择用户所管理的网点（必填）" readonly="true"/>
+						<!-- <input id="serviceHall" name="serviceHall" class="form-control" placeholder="请选择用户所管理的网点"/> -->
+						<div class="input-group-btn">
+							<%@ include
+								file="/WEB-INF/jsp/administration/inventory/devicewarehousing/card/selectUnit.jsp"%>
+						</div>
+					</div>
+				</div>
+			</div> --%>
+			<div class="form-group">
+				<label class="col-sm-2 control-label">入库网点</label>
+				<div class="col-sm-6">
+					<div class="input-group" style="width: 280px">
+						<form:input path="serviceHallName" required="required"
+							cssClass="form-control" placeholder="入库网点必填" readonly="true" />
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-2 control-label">产品类型</label>
+				<div class="col-sm-6">
+					<div class="input-group" style="width: 280px">
+						<form:input path="model" required="required"
+							cssClass="form-control" placeholder="产品类型必填" readonly="true" />
+					</div>
+				</div>
+			</div>
+			<%-- <div class="form-group">
+				<label class="col-sm-2 control-label">品牌</label>
+				<div class="col-sm-6">
+					<form:select path="brand" class="form-control">
+						<form:option value="">请选择</form:option>
+						<form:option value="1">埃特斯</form:option>
+						<form:option value="2">金溢</form:option>
+						<form:option value="3">聚利</form:option>
+						<form:option value="4">东海</form:option>
+						<form:option value="5">航天信息</form:option>
+						<form:option value="6">千方</form:option>
+						<form:option value="7">万集</form:option>
+						<form:option value="8">中兴</form:option>
+						<form:option value="9">握奇</form:option>
+						<form:option value="10">搜林</form:option>
+						<form:option value="11">成谷</form:option>
+						<form:option value="12">云星宇</form:option>
+						<form:option value="13">华虹</form:option>
+						<form:option value="14">黔通电子</form:option>
+						<form:option value="15">通行宝</form:option>
+						<form:option value="16">赛格</form:option>
+					</form:select>
+				</div>
+			</div> --%>
+			<div class="form-group">
+				<label class="col-sm-2 control-label">品牌</label>
+				<div class="col-sm-6">
+					<form:select path="brand" cssClass="form-control m-r-5"
+						id="customerType" data-style="btn-white" data-width="150px">
+						<form:options items="${obuType}" itemLabel="value"
+							itemValue="code" />
+					</form:select>
+				</div>
+			</div>
+			 <div class="form-group">
+				<label class="col-sm-2 control-label">型号</label>
+				<div class="col-sm-6">
+					<form:select path="type" class="form-control">
+						<option value="">请选择</option>
+						<option value="标准型">标准型</option>
+						<option value="蓝牙型">蓝牙型</option>
+					</form:select>
+				</div>
+			</div> 
+			<div class="form-group">
+				<label class="col-sm-2 control-label">数量</label>
+				<div class="col-sm-6">
+					<div class="input-group" style="width: 280px">
+						<form:input path="inboundNum" required="required" id="c" 
+							cssClass="form-control" placeholder="数量必填" />
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-2 control-label">起始编号</label>
+				<div class="col-sm-6">
+					<div class="input-group" style="width: 280px">
+						<form:input path="startId" required="required" id="d" 
+							cssClass="form-control" placeholder="起始编号必填" />
+					</div>
+				</div>
+			</div>
+			<div class="form-group">
+				<label class="col-sm-2 control-label">结束编号</label>
+				<div class="col-sm-6">
+					<div class="input-group" style="width: 280px">
+					<input id="endId" name="endId" type="text" 
+						class="form-control" placeholder="结束编号必填" readonly="true" /> 
+						<%-- <form:input path="endId" required="required"
+							cssClass="form-control" placeholder="结束编号必填" /> --%>
+					</div>
+				</div>
+			</div>
+		</form:form>
+	</div>
+	<div class="modal-footer">
+		<a id="submit" href="javaScript:void(0);"
+			class="btn btn-primary btn-sm">保存</a>
+		<!--  -->
+		<a href="#" class="btn btn-sm btn-white" data-dismiss="modal">关闭</a>
+	</div>
+
+</body>
+</html>

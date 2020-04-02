@@ -1,0 +1,27 @@
+package cn.com.taiji.css.manager.customerservice.card;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
+
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.common.model.dao.Pagination;
+import cn.com.taiji.css.entity.User;
+import cn.com.taiji.css.model.appajax.AppAjaxResponse;
+import cn.com.taiji.css.model.customerservice.card.CancelRefundRequest;
+import cn.com.taiji.css.model.customerservice.card.PreCancelRequest;
+import cn.com.taiji.qtk.entity.CardCancelRefund;
+import cn.com.taiji.qtk.entity.CustomerInfo;
+
+public interface CancelRefundManager {
+	Pagination queryPage(CancelRefundRequest queryModel,User user) throws ManagerException;
+	void exportExcel(@Valid CancelRefundRequest queryModel,HttpServletRequest request,HttpServletResponse response);
+	 CardCancelRefund findOne(String cardId);
+	List<String> getScreenShotBase64(CardCancelRefund refund,HttpServletRequest request) throws ManagerException;
+	AppAjaxResponse updateCancelData(@Valid PreCancelRequest queryModel,User user);
+	
+	CustomerInfo findbyCustomerId(String customerId);
+	AppAjaxResponse attachConfirm(String cardId,Integer attachStatus);
+}

@@ -53,7 +53,7 @@
 			<a href="${rootUrl }app/customerservice/card/cancelrefund/edit/${vo.cardId}" rowCardId ="${vo.cardId}" class="taiji_modal">修改</a>
 		</c:if>
 		<!-- <a  href="javascript:void(0);" id="hangBtnOff" class="taiji_acl">操作日志</a> -->
-		<c:if test="${vo.attachStatus==0 }">
+		<c:if test="${fileName!=null&&vo.attachStatus==0 }">
 			<a  href="javascript:void(0);" rowCardId ="${vo.cardId}" id="attachConfirm" class="taiji_acl">附件确认</a>
 			<a  href="javascript:void(0);" rowCardId ="${vo.cardId}" id="attachRefuse" class="taiji_acl">附件不符</a>
 		</c:if>

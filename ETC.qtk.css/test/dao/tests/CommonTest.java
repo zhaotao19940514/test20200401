@@ -33,7 +33,7 @@ public class CommonTest extends MyBaseTest
 {
 	@Test
 	public void all() throws Exception
-	{
+	{ 
 		Map<Integer, Data> maps = new HashMap<Integer, Data>(15000000);
 		BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(new File(
 				"resources/ballot.txt")), "UTF-8"));

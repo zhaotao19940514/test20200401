@@ -17,10 +17,10 @@
 			$.ajaxSetup({
 				cache : false
 			});
-			debugger;
+			/* debugger;
 			if(administrative!='true'){
 				 $("#selRefundType").attr("disabled",true);
-			}
+			} */
 			if(cusType==1){
 				document.getElementById("bankAddres").style.display='none';
 				$("#fileForm").hide();

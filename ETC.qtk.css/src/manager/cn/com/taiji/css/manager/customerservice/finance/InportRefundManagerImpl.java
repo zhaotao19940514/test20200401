@@ -318,7 +318,7 @@ public class InportRefundManagerImpl extends AbstractDsiCommManager implements I
 				continue;
 			}
 			//退款状态不是已导出状态
-			if(!refundDetail.getRefundType().equals(RefundDetailType.TFYDC)&&!refundDetail.getRefundType().equals(RefundDetailType.RFFL)) {
+			if(!refundDetail.getRefundType().equals(RefundDetailType.TFYDC)&&!refundDetail.getRefundType().equals(RefundDetailType.RFFL)&&!refundDetail.getRefundType().equals(RefundDetailType.GLYQR)) {
 				res.setCardId(mo.getCardId());
 				res.setErrorMsg("退款状态为"+refundDetail.getRefundType().getValue());
 				resList.add(res);

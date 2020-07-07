@@ -1,0 +1,14 @@
+package cn.com.taiji.css.manager.apply.baseinfo;
+
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.css.model.customerservice.cardobuquery.DaspUserQueryRequest;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.DaspUserInfoQueryCommResponse;
+import cn.com.taiji.qtk.entity.CustomerInfo;
+
+public interface DaspUserQueryManager {
+
+	CustomerInfo findByCustomerIdInDsi(DaspUserQueryRequest queryModel);
+
+	DaspUserInfoQueryCommResponse findByCustomerIdInDasp(DaspUserQueryRequest queryModel) throws ManagerException;
+
+}

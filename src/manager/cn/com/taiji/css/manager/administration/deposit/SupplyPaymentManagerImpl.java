@@ -145,13 +145,6 @@ public class SupplyPaymentManagerImpl extends AbstractDsiCommManager implements 
 		entity.setUpdateTime(format.format(now));
 		collateCardBalanceRepo.save(entity);
 	}
-	public static void main(String[] args) {
-		List<Integer> list = Lists.newArrayList();
-		list.add(1);
-		list.add(2);
-		list.add(3);
-		int sum = list.stream().reduce(0, (a, b) -> a + b);
-		System.out.println(sum);
-	}
+	
 }
 

@@ -151,7 +151,7 @@ public class CardAccountRefundRequest extends JpaDateTimePageableDataRequest<Acc
 					hql.append(" and agencyId=:agencyId", agencyId);
 				}
 			}else {
-				hql.append(" and agencyId not in ('52010104001','52010102007','52010102005','52010102018','52010102002')");
+				hql.append(" and agencyId not in ('52010102007','52010102005','52010102018','52010102002')");
 			}
 			if(null!=refundType) {
 				hql.append(" and refundType=:refundType", RefundDetailType.valueOfCode(refundType));

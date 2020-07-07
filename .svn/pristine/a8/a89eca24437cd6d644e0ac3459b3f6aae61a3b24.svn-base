@@ -1,0 +1,56 @@
+/**
+ * 
+ */
+package cn.com.taiji.css.manager.apply.baseinfo;
+
+import java.io.IOException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cn.com.taiji.common.manager.AbstractManager;
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.common.manager.net.http.binclient.ApiRequestException;
+import cn.com.taiji.css.model.customerservice.cardobuquery.DaspUserQueryRequest;
+import cn.com.taiji.dsi.manager.comm.client.InqueryBinService;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.DaspUserInfoQueryCommRequest;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.DaspUserInfoQueryCommResponse;
+import cn.com.taiji.qtk.entity.CustomerInfo;
+import cn.com.taiji.qtk.repo.jpa.CustomerInfoRepo;
+
+/**
+ * @author Administrator
+ *
+ */
+@Service
+public class DaspUserQueryManagerImpl extends AbstractManager implements DaspUserQueryManager {
+
+	@Autowired
+	private CustomerInfoRepo customerInfoRepo;
+	@Autowired
+	private InqueryBinService inqueryBinService;
+	
+	@Override
+	public CustomerInfo findByCustomerIdInDsi(DaspUserQueryRequest queryModel) {
+		return customerInfoRepo.findByCustomerId(queryModel.getCustomerId());
+	}
+
+	@Override
+	public DaspUserInfoQueryCommResponse findByCustomerIdInDasp(DaspUserQueryRequest queryModel) throws ManagerException {
+		//生成请求
+		DaspUserInfoQueryCommRequest req = new DaspUserInfoQueryCommRequest();
+		req.setCustomerId(queryModel.getCustomerId());
+		//接口调用
+		DaspUserInfoQueryCommResponse userQuery;
+		try {
+			userQuery = inqueryBinService.userQuery(req);
+			if (userQuery == null || userQuery.getStatus() != 1) throw new ManagerException(userQuery.getMessage());
+		} catch (ApiRequestException e) {
+			throw new ManagerException(e.getMessage());
+		} catch (IOException e) {
+			throw new ManagerException("查询失败");
+		}
+		return userQuery;
+	}
+
+}

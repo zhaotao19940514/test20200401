@@ -1,5 +1,5 @@
-版本信息:Version 1.0,Build 20200331
-打包时间:11:35:31
+版本信息:Version 1.0,Build 20200629
+打包时间:10:35:56
  
 本次版本依赖的类库如下：
 	antlr-2.7.7.jar   434.85K
@@ -14,7 +14,7 @@
 	commons-logging-1.2.jar   60.38K
 	dom4j-2.1.jar   315.37K
 	druid-1.1.jar   2.45M
-	dsi-fileprotocol-1.0.jar   727.29K
+	dsi-fileprotocol-1.0.jar   907.67K
 	fastjson-1.2.47.jar   533.76K
 	freemarker-2.3.jar   1.29M
 	guava-23.1.jar   2.51M
@@ -46,7 +46,7 @@
 	poi-3.17.jar   2.58M
 	poi-ooxml-3.17.jar   1.41M
 	poi-ooxml-schemas-3.17.jar   5.65M
-	qtk_nondsi.jar   921.73K
+	qtk_nondsi.jar   967.79K
 	slf4j-api-1.7.jar   40.24K
 	spring-aop-5.0.jar   352.16K
 	spring-aspects-5.0.jar   40.16K
@@ -73,4 +73,4 @@
 	validation-api-2.0.jar   90.90K
 	xmlbeans-2.6.jar   2.60M
 	xstream-1.4.jar   526.20K
-总共依赖的类库个数:71,大小:53.43M
+总共依赖的类库个数:71,大小:53.65M

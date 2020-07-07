@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<%@ page contentType="text/html;charset=utf-8"%>
+<!--[if IE 8]> <html lang="en" class="ie8"> <![endif]-->
+<!--[if !IE]><!-->
+<html xmlns="http://www.w3.org/1999/xhtml"> 
+<!--<![endif]-->
+<head>
+<%@ include file="/WEB-INF/jsp/assets.jsp" %>
+<link href="${rootUrl }plugins/bootstrap-editable/css/bootstrap-editable.css" rel="stylesheet" />
+<script src="${rootUrl }plugins/bootstrap-editable/js/bootstrap-editable.min.js" type="text/javascript"></script>
+<script src="${rootUrl }plugins/datepicker/4.8/WdatePicker.js" type="text/javascript"></script>
+<script type="text/javascript">
+$(function(){
+	$.ajaxSetup({cache : false});
+	$("#myManage").taiji({
+		enableAclCheck:true,
+		search:{
+			 autoSearch:false
+		}
+	});
+	
+})
+</script>
+</head>
+<body >
+	<div id="page-loader" class="fade in"><span class="spinner"></span></div>
+	
+	<!-- begin #page-container -->
+	<div id="page-container" class="fade">
+		<!-- begin #header -->
+		<%@ include file="/WEB-INF/jsp/header.jsp" %>
+		<!-- end #header -->
+		
+		<!-- begin #sidebar -->
+		<%@ include file="/WEB-INF/jsp/sidebar.jsp" %>
+		<!-- end #sidebar -->
+		
+		<!-- begin #content -->
+		<div id="content" class="content">
+			<ol class="breadcrumb pull-right">
+			</ol>
+			
+			<!-- begin row -->
+			<div class="row">
+			    <!-- begin col-12 -->
+			    <div class="col-md-12">
+			        <!-- begin panel -->
+                    <div id="myManage" class="panel panel-inverse">
+                        <div class="panel-heading">
+                            <div class="panel-heading-btn">
+                                <a href="javascript:;" class="btn btn-xs btn-icon btn-circle btn-default" data-click="panel-expand"><i class="fa fa-expand"></i></a>
+                                <a href="javascript:;" class="btn btn-xs btn-icon btn-circle btn-success" data-click="panel-reload"><i class="fa fa-repeat"></i></a>
+                                <a href="javascript:;" class="btn btn-xs btn-icon btn-circle btn-warning" data-click="panel-collapse"><i class="fa fa-minus"></i></a>
+                                <a href="javascript:;" class="btn btn-xs btn-icon btn-circle btn-danger" data-click="panel-remove"><i class="fa fa-times"></i></a>
+                            </div>
+                            <h4 class="panel-title">渠道交易统计</h4>
+                        </div>                       
+                        <div class="panel-body">
+                        	<form:form cssClass="taiji_search_form form-inline m-t-5 " modelAttribute="queryModel"  id="listForm" name="listForm" action="${rootUrl}app/customerservice/report/channeltrade/manage" method="post">
+								<div class="form-group m-t-5">
+						 <label class="control-label">日期</label>
+						<div  class="input-group">
+	 						<form:input cssStyle="width:150px"   path="startDate" readonly="true"  cssClass="form-control" />
+						    <span class="input-group-btn">
+								<button type="button" class="btn btn-default" onclick="WdatePicker({el:$dp.$('startDate'),dateFmt:'yyyyMM',maxDate:'#F{$dp.$D(\'endDate\')}'});"><i class="fa fa-calendar"></i></button>
+							</span>
+						</div>
+					</div>
+					<div class="form-group m-t-5">	
+						<label class="control-label">至</label>
+						<div  class="input-group">
+		  					<form:input cssStyle="width:150px" path="endDate" readonly="true"  cssClass="form-control"   />
+							<span class="input-group-btn">
+								<button type="button" class="btn btn-default"  onclick="WdatePicker({el:$dp.$('endDate'),dateFmt:'yyyyMM',minDate:'#F{$dp.$D(\'startDate\')}'});"><i class="fa fa-calendar"></i></button>
+							</span>
+						</div>
+	 				</div>	 	
+	 				<form:select path="type"  cssClass="form-control  m-r-5" data-style="btn-white" data-width="160px">
+						<form:option value="1">地区中心</form:option>
+						<form:option value="2">其他渠道</form:option>
+					</form:select>							
+                                <button class="taiji_search_submit btn btn-md btn-success m-r-5" type="button" ><i class="fa fa-search  m-r-10 "></i>查询</button>
+								<button class="taiji_search_reset btn btn-md btn-default" type="button"><i class="fa  fa-refresh  m-r-10  "></i>重置</button> 
+                      			
+                        	</form:form>
+						</div>
+						<div   class="taiji_search_result taiji_table_float table-responsive">
+							<table class="table table-striped table-bordered  table-hover" id="table1">
+								<thead>
+									<tr> 										
+										<th>地区/渠道名称</th>		
+										<th>交易金额(元)</th>
+								   </tr>
+								</thead>
+								<tbody>
+								</tbody>
+							</table>
+							<!--endprint-->
+						</div>
+						<div class="panel-footer text-right">
+							<div class="pageturn taiji_pager">
+	                        </div>
+	                       
+             		  </div>
+					</div>
+                    <!-- end panel -->
+			    </div>
+			    <!-- end col-12 -->
+			</div>
+		</div>
+	
+	
+
+</body>
+</html>

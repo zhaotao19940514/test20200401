@@ -20,7 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class RechargeIdUniqueNo {
 	private static Object lock = new Object();
 	private static Integer RECHARGE_ID_SERIALNO_MIN = 1;
-	private static Integer RECHARGE_ID_SERIALNO_MAX = 999;
+	private static Integer RECHARGE_ID_SERIALNO_MAX = 99;
 	private static AtomicInteger RECHARGEID_ATOMICINTEGER = new AtomicInteger(RECHARGE_ID_SERIALNO_MIN);
 	
 	public static String getSerialNo(){

@@ -1,0 +1,49 @@
+package cn.com.taiji.css.manager.apply.baseinfo;
+
+import java.io.IOException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cn.com.taiji.common.manager.AbstractManager;
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.common.manager.net.http.binclient.ApiRequestException;
+import cn.com.taiji.css.model.customerservice.cardobuquery.DaspObuQueryRequest;
+import cn.com.taiji.dsi.manager.comm.client.InqueryBinService;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.DaspObuInfoQueryCommRequest;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.DaspObuInfoQueryCommResponse;
+import cn.com.taiji.qtk.entity.OBUInfo;
+import cn.com.taiji.qtk.repo.jpa.OBUInfoRepo;
+
+@Service
+public class DaspObuQueryManagerImpl extends AbstractManager implements DaspObuQueryManager {
+
+	@Autowired
+	private OBUInfoRepo obuInfoRepo;
+	@Autowired
+	private InqueryBinService inqueryBinService;
+	
+	@Override
+	public OBUInfo findByObuIdInDsi(DaspObuQueryRequest queryModel) {
+		return obuInfoRepo.findByObuId(queryModel.getObuId());
+	}
+
+	@Override
+	public DaspObuInfoQueryCommResponse findByObuIdInDasp(DaspObuQueryRequest queryModel) throws ManagerException {
+		//生成请求
+		DaspObuInfoQueryCommRequest req = new DaspObuInfoQueryCommRequest();
+		req.setObuId(queryModel.getObuId());
+		//接口调用
+		DaspObuInfoQueryCommResponse obuQuery;
+		try {
+			obuQuery = inqueryBinService.obuQuery(req);
+			if (obuQuery == null || obuQuery.getStatus() != 1) throw new ManagerException(obuQuery.getMessage());
+		} catch (ApiRequestException e) {
+			throw new ManagerException(e.getMessage());
+		} catch (IOException e) {
+			throw new ManagerException("查询失败");
+		}
+		return obuQuery;
+	}
+
+}

@@ -1,0 +1,370 @@
+package cn.com.taiji.css.repo.jpa;
+
+import java.time.LocalDateTime;
+import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
+
+import cn.com.taiji.common.repo.jpa.AbstractJpaRepo;
+import cn.com.taiji.qtk.entity.CardInfo;
+
+/**
+ * 日报查询REPO 此类中的方法 最多2个参数：startTime,endTime 参数定义：参数格式为： startTime
+ * yyyy-MM-ddTHH:mm:ss ; startTime2 yyyy-MM-dd HH:mm:ss endTime
+ * yyyy-MM-ddTHH:mm:ss ; endTime2 yyyy-MM-dd HH:mm:ss 将每日17：00的日报查询添加到方法中
+ * 需维护DailyStatisticsType枚举，定义表格样式
+ * 
+ * @author HHW
+ *
+ */
+public interface DailyStatisticsRepo extends AbstractJpaRepo<CardInfo, String> {
+
+	/**
+	 * 1.当日贵籍货车发行量
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "     select  name ,count(1)   "
+			+ "    from qtk_obuinfo o, qtk_agency a ,qtk_vehicleinfo v  "
+			+ "    where  substr(o.REGISTERED_CHANNEL_ID,0,11)=a.agency_id   " + "    and o.vehicle_id=v.vehicle_id  "
+			+ "    and v.type in(11,12,13,14,15,16)  " + "    and substr(o.vehicle_id,0,1)='贵'    "
+			+ "    and o.REGISTERED_TIME>=?1   " + "    and o.REGISTERED_TIME<=?2  "
+			+ "    and obu_status in(0,1,6,11)   " + "    group by name ")
+	public List<Object[]> query1(String startTime, String endTime);
+
+	/**
+	 * 2.累计贵籍货车保有量
+	 * 
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "  select  name ,count(1)   "
+			+ "    from qtk_obuinfo o, qtk_agency a ,qtk_vehicleinfo v  "
+			+ "    where substr(o.REGISTERED_CHANNEL_ID,0,11)=a.agency_id   " + "    and o.vehicle_id=v.vehicle_id  "
+			+ "    and v.type in(11,12,13,14,15,16)  " + "    and substr(o.vehicle_id,0,1)='贵'   "
+			+ "    and o.REGISTERED_TIME<=?1  " + "    and obu_status in(0,1,6,11)    " + "    group by name  ")
+	public List<Object[]> query2(String endTime);
+
+	/**
+	 * 3.按省份统计当日开卡量
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = " select  substr(o.vehicle_id,0,1) ,count(1)   "
+			+ "    from qtk_obuinfo o, qtk_agency a   "
+			+ "    where substr(o.REGISTERED_CHANNEL_ID,0,11)=a.agency_id   " + "    and o.REGISTERED_TIME>=?1   "
+			+ "    and o.REGISTERED_TIME<=?2  " + "    and obu_status in(0,1,6,11)  "
+			+ "    group by substr(o.vehicle_id,0,1)   " + "     ")
+	public List<Object[]> query3(String startTime, String endTime);
+
+	/**
+	 * 4.部认证平台下工行发行量
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "  select substr(vehicle_id,0,1),channel_name, count(card_id) from (  "
+			+ "    select card_id,c.vehicle_id, channel_name from qtk_cardinfo c,dasp_order_notice o   "
+			+ "    where c.vehicle_id = o.vehicle_id  " + "    and card_enableTime>=?1   "
+			+ "    and card_enableTime<=?2   " + "    and c.AGENCY_ID='52010188037'  "
+			+ "    and o.channel_name='中国工商银行'  " + "    )  " + "    group by channel_name, substr(vehicle_id,0,1) ")
+	public List<Object[]> query4(String startTime, String endTime);
+
+	/**
+	 * 5.单位
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = " select substr(vehicle_id,0,2),count(1)   "
+			+ "    from qtk_obuinfo o, qtk_customerinfo u   " + "    where o.customer_id=u.customer_id   "
+			+ "    and customer_type=2  " + "    and o.REGISTERED_TIME>=?1   " + "    and o.REGISTERED_TIME<=?2   "
+			+ "    and obu_status in(0,1,6,11)  " + "    and substr(vehicle_id,0,1)='贵'  "
+			+ "    group by substr(vehicle_id,0,2)  " + "    order by substr(vehicle_id,0,2)  ")
+	public List<Object[]> query5(String startTime, String endTime);
+
+	/**
+	 * 6.All贵籍
+	 * 
+	 * @param startEnableTime
+	 * @param endEnableTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "  select  name ,count(1)   " + "    from qtk_obuinfo o, qtk_agency a   "
+			+ "    where substr(o.REGISTERED_CHANNEL_ID,0,11)=a.agency_id   " + "    and substr(vehicle_id,0,1)='贵'    "
+			+ "    and o.REGISTERED_TIME>=?1   " + "    and o.REGISTERED_TIME<=?2   " + "    group by name ")
+	public List<Object[]> query6(String startEnableTime, String endEnableTime);
+
+	/**
+	 * 7.All非贵籍
+	 * 
+	 * @param startEnableTime
+	 * @param endEnableTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "  select  name ,count(1)   " + "    from qtk_obuinfo o, qtk_agency a   "
+			+ "    where substr(o.REGISTERED_CHANNEL_ID,0,11)=a.agency_id   "
+			+ "    and substr(vehicle_id,0,1)!='贵'    " + "    and o.REGISTERED_TIME>=?1   "
+			+ "    and o.REGISTERED_TIME<=?2   " + "    group by name ")
+	public List<Object[]> query7(String startEnableTime, String endEnableTime);
+
+	/**
+	 * 8.All贵籍拆分五大行
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "select channel_name, count(*) from (  "
+			+ "    select o.OBU_ID, channel_name from qtk_obuinfo o ,dasp_order_notice ord   "
+			+ "    where o.vehicle_id = ord.vehicle_id  " + "    and substr(o.vehicle_id,0,1)='贵'   "
+			+ "    and o.REGISTERED_TIME>=?1   " + "    and o.REGISTERED_TIME<=?2   "
+			+ "    and substr(o.REGISTERED_CHANNEL_ID,0,11)='52010188037'  " + "    group by o.obu_id ,channel_name)  "
+			+ "    group by channel_name ")
+	public List<Object[]> query8(String startTime, String endTime);
+
+	/**
+	 * 9.All非贵籍拆分五大行
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "select channel_name, count(*) from (  "
+			+ "    select o.OBU_ID, channel_name from qtk_obuinfo o ,dasp_order_notice ord   "
+			+ "    where o.vehicle_id = ord.vehicle_id  " + "    and substr(o.vehicle_id,0,1)!='贵'   "
+			+ "    and o.REGISTERED_TIME>=?1   " + "    and o.REGISTERED_TIME<=?2   "
+			+ "    and substr(o.REGISTERED_CHANNEL_ID,0,11)='52010188037'  " + "    group by o.obu_id ,channel_name)  "
+			+ "    group by channel_name ")
+	public List<Object[]> query9(String startTime, String endTime);
+
+	/**
+	 * 10.异常
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "  select  name ,o.obu_status,count(1)   "
+			+ "    from qtk_obuinfo o, qtk_agency a   "
+			+ "    where substr(o.REGISTERED_CHANNEL_ID,0,11)=a.agency_id   " + "    and substr(vehicle_id,0,1)='贵'    "
+			+ "    and o.REGISTERED_TIME>=?1   " + "    and o.REGISTERED_TIME<=?2   "
+			+ "    and o.obu_status  not in(0,1,6,11)  " + "    group by name, o.obu_status ")
+	public List<Object[]> query10(String startTime, String endTime);
+
+	/**
+	 * 11.本月新增
+	 * 
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = " select  name,count(1)   " + "    from qtk_obuinfo o, qtk_agency a   "
+			+ "    where substr(o.REGISTERED_CHANNEL_ID,0,11)=a.agency_id   "
+			+ "    and substr(o.vehicle_id,0,1)='贵'   " + "    and o.REGISTERED_TIME>=?1   "
+			+ "    and o.REGISTERED_TIME<=?2   " + "    and obu_status in(0,1,6,11)  " + "    group by name ")
+	public List<Object[]> query11(String startTime, String endTime);
+
+	/**
+	 * 12.保有
+	 * 
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = " select  name,count(1)   " + "    from qtk_obuinfo o, qtk_agency a   "
+			+ "    where substr(o.REGISTERED_CHANNEL_ID,0,11)=a.agency_id   "
+			+ "    and substr(o.vehicle_id,0,1)='贵'    " + "   and o.REGISTERED_TIME<=?1   "
+			+ "    and obu_status in(0,1,6,11)  " + "    group by name ")
+	public List<Object[]> query12(String endTime);
+
+	/**
+	 * 13.部认证保有量分5大行
+	 * 
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "select channel_name, count(*) from (  "
+			+ "    select card_id, channel_name from qtk_cardinfo c,dasp_order_notice o   "
+			+ "    where c.vehicle_id = o.vehicle_id  " + "    and substr(c.vehicle_id,0,1)='贵'   "
+			+ "    and card_enableTime<=?1   " + "    and c.AGENCY_ID='52010188037'  "
+			+ "    and card_status not in('0','4','5','9')  " + "    group by card_id ,channel_name)  "
+			+ "    group by channel_name ")
+	public List<Object[]> query13(String endTime);
+
+	/**
+	 * 14.注销
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "    select g.NAME,u.*   " + "        from qtk_agency g,(  "
+			+ "        select count(c.id),c.AGENCY_ID   " + "        from qtk_CANCELLEDCARD_DETAIL c ,qtk_cardInfo i   "
+			+ "        where  c.CARD_ID=i.card_id   " + "        and  c.AGENCY_ID is not null    "
+			+ "        and  c.create_time>= ?1     " + "        and  c.create_time<= ?2     "
+			+ "        group by c.AGENCY_ID) u  " + "    where g.AGENCY_ID=u.AGENCY_ID ")
+	public List<Object[]> query14(LocalDateTime startTime, LocalDateTime endTime);
+
+	/**
+	 * 15.累计注销
+	 * 
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = " select g.NAME,u.*   " + "    from qtk_agency g,(  "
+			+ "        select count(c.id),c.AGENCY_ID   " + "        from qtk_CANCELLEDCARD_DETAIL c ,qtk_cardInfo i   "
+			+ "        where  c.CARD_ID=i.card_id   " + "        and  c.AGENCY_ID is not null    "
+			+ "        and  c.create_time<= ?1      " + "        group by c.AGENCY_ID) u   "
+			+ "    where g.AGENCY_ID=u.AGENCY_ID ")
+	public List<Object[]> query15(LocalDateTime endTime);
+
+	/**
+	 * 16.地州
+	 * 
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "  select  substr(o.vehicle_id,0,2),count(1)   " + "    from qtk_obuinfo o  "
+			+ "    where substr(o.vehicle_id,0,1)='贵'   " + "    and o.REGISTERED_TIME<=?1   "
+			+ "    and obu_status in(0,1,6,11)  " + "    group by substr(o.vehicle_id,0,2)  "
+			+ "    ORDER BY substr(o.vehicle_id,0,2) ")
+	public List<Object[]> query16(String endTime);
+
+	/**
+	 * 17.固定id查询
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = " select  s.NAME,count(1)   " + "    from qtk_cardinfo c,qtk_SERVICEHALL s  "
+			+ "    where  c.CHANNEL_ID=s.servicehall_id   " + "    and c.channel_id in('5201018803701010149',  "
+			+ "    '5201018803701010159',  " + "    '5201018803701010160',  " + "    '5201018803701010150',  "
+			+ "    '5201018803701010153',  " + "    '5201018803701010154',  " + "    '5201018803701010155',  "
+			+ "    '5201018803701010156',  " + "    '5201018803701010157',  " + "    '5201018803701010158',  "
+			+ "    '5201018803701010151',  " + "    '5201018803701010152',  " + "    '5201018803701010161',  "
+			+ "    '5201018803701010162',  " + "    '5201018803701010163',  " + "    '5201018803701010164',  "
+			+ "    '5201018803701010165',  " + "    '5201018803701010166',  " + "    '5201018803701010167',  "
+			+ "    '5201018803701010168',  " + "    '5201018803701010170',  " + "    '5201018803701010171',  "
+			+ "    '5201018803701010185',  " + "    '5201018803701010187')  " + "    and card_enableTime>=?1   "
+			+ "    and card_enableTime<=?2   " + "    and card_status not in('0','4','5','9')   "
+			+ "    group by s.NAME ")
+	public List<Object[]> query17(String startTime, String endTime);
+
+	/**
+	 * 18.固定id查询（累计）
+	 * 
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = " select  s.NAME,count(1)   " + "    from qtk_cardinfo c,qtk_SERVICEHALL s  "
+			+ "    where  c.CHANNEL_ID=s.servicehall_id   " + "    and c.channel_id in('5201018803701010149',  "
+			+ "    '5201018803701010159',  " + "    '5201018803701010160',  " + "    '5201018803701010150',  "
+			+ "    '5201018803701010153',  " + "    '5201018803701010154',  " + "    '5201018803701010155',  "
+			+ "    '5201018803701010156',  " + "    '5201018803701010157',  " + "    '5201018803701010158',  "
+			+ "    '5201018803701010151',  " + "    '5201018803701010152',  " + "    '5201018803701010161',  "
+			+ "    '5201018803701010162',  " + "    '5201018803701010163',  " + "    '5201018803701010164',  "
+			+ "    '5201018803701010165',  " + "    '5201018803701010166',  " + "    '5201018803701010167',  "
+			+ "    '5201018803701010168',  " + "    '5201018803701010170',  " + "    '5201018803701010171',  "
+			+ "    '5201018803701010185',  " + "    '5201018803701010187')  " + "    and card_enableTime<=?1   "
+			+ "    and card_status not in('0','4','5','9')   " + "    group by s.NAME ")
+	public List<Object[]> query18(String endTime);
+
+	/**
+	 * 19.当日注销按卡类型和所属地区和机构统计
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "select  g.NAME,u.*   " + "        from qtk_agency g,(  "
+			+ "        select count(c.id),c.AGENCY_ID ,decode(substr(i.vehicle_id,1,1) , '贵','是','否') as 贵籍,decode(floor(i.CARD_TYPE / 100) , 1,'记账卡',2,'储值卡','其他') as 卡类型  "
+			+ "        from qtk_CANCELLEDCARD_DETAIL c ,qtk_cardInfo i   " + "        where  c.CARD_ID=i.card_id   "
+			+ "        and  c.AGENCY_ID is not null    " + "        and  c.create_time>= ?1     "
+			+ "        and  c.create_time<= ?2     "
+			+ "        group by c.AGENCY_ID, decode(substr(i.vehicle_id,1,1) , '贵','是','否') ,decode(floor(i.CARD_TYPE / 100) , 1,'记账卡',2,'储值卡','其他')   "
+			+ "        order by c.AGENCY_ID ,decode(floor(i.CARD_TYPE / 100) , 1,'记账卡',2,'储值卡','其他')) u  "
+			+ "    where g.AGENCY_ID=u.AGENCY_ID  ")
+	public List<Object[]> query19(LocalDateTime startTime, LocalDateTime endTime);
+
+	/**
+	 * 20.农信货车每日新增
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "  select a.NAME,count(1)   "
+			+ "    from qtk_cardinfo c, qtk_agency a ,qtk_VEHICLEINFO v  "
+			+ "    where substr(c.channel_id,0,11)=a.agency_id   " + "    and c.vehicle_id=v.vehicle_id  "
+			+ "    and card_enableTime>=?1  " + "    and card_enableTime<=?2   "
+			+ "    and v.type in ('11','12','13','14','15')  " + "    and card_status not in('0','4','5','9')   "
+			+ "    and c.agency_id='52010102050'  " + "    group by a.NAME ")
+	public List<Object[]> query20(String startTime, String endTime);
+
+	/**
+	 * 21.农信货车累计
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "  select a.name,count(1)   "
+			+ "    from qtk_cardinfo c, qtk_agency a ,qtk_VEHICLEINFO v  "
+			+ "    where substr(c.channel_id,0,11)=a.agency_id   " + "    and c.vehicle_id=v.vehicle_id  "
+			+ "    and card_enableTime>=?1  " + "    and card_enableTime<=?2   "
+			+ "    and v.type in ('11','12','13','14','15')  " + "    and card_status not in('0','4','5','9')   "
+			+ "    and c.agency_id='52010102050'  " + "    group by a.name ")
+	public List<Object[]> query21(String startTime, String endTime);
+
+	/**
+	 * 22.黔通智联自营注销详情
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "select h.name as 卡机构,p.操作工号,p.vehicle_id,p.卡类型,p.注销网点  " + "    from  "
+			+ "    (select u.staff_id as 操作工号,u.channel_id,u.vehicle_id,u.卡类型,S.NAME as 注销网点,card_agency_id  "
+			+ "    from QTK_SERVICEHALL S,(  "
+			+ "    select c.STAFF_ID,c.card_id,c.VEHICLE_ID,c.CHANNEL_ID AS CHANNEL_ID ,I.AGENCY_ID AS CARD_AGENCY_ID ,decode(floor(i.CARD_TYPE / 100) , 1,'记账卡',2,'储值卡','其他') as 卡类型  "
+			+ "    from QTK_CANCELLEDCARD_DETAIL c ,qtk_cardInfo i   " + "    where  c.CARD_ID=i.card_id   "
+			+ "    and  c.AGENCY_ID is not null    " + "    and  c.create_time>= ?1     "
+			+ "    and  c.create_time<= ?2   " + "     and c.agency_id='52010106004'  " + "    ) u  " + "    where   "
+			+ "    S.SERVICEHALL_ID=U.CHANNEL_ID) p,qtk_agency h  " + "    where card_agency_id=h.agency_id  ")
+	public List<Object[]> query22(LocalDateTime startTime2, LocalDateTime endTime2);
+
+	/**
+	 * 23.每日发行数据
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "SELECT a.name,V.VEHICLE_PLATE,V.VEHICLE_PLATECOLOR,c.card_id,C.CARD_ENABLETIME,c.card_status FROM QTK_CARDINFO C,QTK_VEHICLEINFO V,QTK_AGENCY A  "
+			+ "    WHERE C.AGENCY_ID=A.AGENCY_ID  " + "    AND C.VEHICLE_ID=V.VEHICLE_ID  "
+			+ "    AND C.CARD_ENABLETIME>=?1  " + "    AND C.CARD_ENABLETIME<=?2  "
+			+ "    AND C.AGENCY_ID IN('52010102044',  " + "    '52010102005',  " + "    '52010102042',  "
+			+ "    '52010102015',  " + "    '52010102038',  " + "    '52010102912',  " + "    '52010102913')  "
+			+ "    ORDER BY CARD_ENABLETIME ")
+	public List<Object[]> query23(String startTime, String endTime);
+
+	/**
+	 * 24.客货保有累计
+	 * 
+	 * @param startTime
+	 * @param endTime
+	 * @return
+	 */
+	@Query(nativeQuery = true, value = "SELECT  decode(length(to_char(v.TYPE)) , 1,'客',2,'货','其他') as 车型,decode(substr(v.VEHICLE_PLATE,1,1) , '贵','是','否') as 贵籍,COUNT(1)   "
+			+ "    FROM QTK_CARDINFO C,QTK_OBUINFO O,QTK_VEHICLEINFO V  " + "    WHERE C.VEHICLE_ID=O.VEHICLE_ID  "
+			+ "    AND C.VEHICLE_ID=V.VEHICLE_ID   " + "    AND C.CARD_ENABLETIME<=?1  "
+			+ "    AND O.REGISTERED_TIME<=?1  "
+			+ "    group by decode(length(to_char(v.TYPE)) , 1,'客',2,'货','其他'), decode(substr(v.VEHICLE_PLATE,1,1) , '贵','是','否')  ")
+	public List<Object[]> query24(String startTime2);
+}

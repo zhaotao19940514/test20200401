@@ -1,0 +1,52 @@
+package cn.com.taiji.css.manager.apply.baseinfo;
+
+import java.io.IOException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cn.com.taiji.common.manager.AbstractManager;
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.common.manager.net.http.binclient.ApiRequestException;
+import cn.com.taiji.css.model.customerservice.cardobuquery.DaspCardQueryRequest;
+import cn.com.taiji.dsi.manager.comm.client.InqueryBinService;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.DaspCardInfoQueryCommRequest;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.DaspCardInfoQueryCommResponse;
+import cn.com.taiji.qtk.entity.CardInfo;
+import cn.com.taiji.qtk.repo.jpa.CardInfoRepo;
+
+@Service
+public class DaspCardQueryManagerImpl extends AbstractManager implements DaspCardQueryManager {
+	
+
+	@Autowired
+	private CardInfoRepo cardInfoRepo;
+	@Autowired
+	private InqueryBinService inqueryBinService;
+	
+	@Override
+	public CardInfo findByCardIdInDsi(DaspCardQueryRequest queryModel) {
+		String cardId = queryModel.getCardId();
+		CardInfo cardInfo = cardInfoRepo.findByCardId(cardId);
+		return cardInfo;
+	}
+
+	@Override
+	public DaspCardInfoQueryCommResponse findByCardIdInDasp(DaspCardQueryRequest queryModel) throws ManagerException {
+		//生成请求
+		DaspCardInfoQueryCommRequest req = new DaspCardInfoQueryCommRequest();
+		req.setCardId(queryModel.getCardId());
+		//接口调用
+		DaspCardInfoQueryCommResponse cardQuery;
+		try {
+			cardQuery = inqueryBinService.cardQuery(req);
+			if (cardQuery == null || cardQuery.getStatus() != 1) throw new ManagerException(cardQuery.getMessage());
+		} catch (ApiRequestException e) {
+			throw new ManagerException(e.getMessage());
+		} catch (IOException e) {
+			throw new ManagerException("查询失败");
+		}
+		return cardQuery;
+	}
+
+}

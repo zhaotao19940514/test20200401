@@ -1,0 +1,49 @@
+package cn.com.taiji.css.manager.apply.baseinfo;
+
+import java.io.IOException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import cn.com.taiji.common.manager.AbstractManager;
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.common.manager.net.http.binclient.ApiRequestException;
+import cn.com.taiji.css.model.customerservice.cardobuquery.DaspVehicleQueryRequest;
+import cn.com.taiji.dsi.manager.comm.client.InqueryBinService;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.DaspVehicleInfoQueryCommRequest;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.DaspVehicleInfoQueryCommResponse;
+import cn.com.taiji.qtk.entity.VehicleInfo;
+import cn.com.taiji.qtk.repo.jpa.VehicleInfoRepo;
+
+@Service
+public class DaspVehicleQueryManagerImpl extends AbstractManager implements DaspVehicleQueryManager {
+
+	@Autowired
+	private VehicleInfoRepo vehicleInfoRepo;
+	@Autowired
+	private InqueryBinService inqueryBinService;
+	
+	@Override
+	public VehicleInfo findByVehicleIdInDsi(DaspVehicleQueryRequest queryModel) {
+		return vehicleInfoRepo.findByVehicleId(queryModel.getVehicleId());
+	}
+
+	@Override
+	public DaspVehicleInfoQueryCommResponse findByVehicleIdInDasp(DaspVehicleQueryRequest queryModel) throws ManagerException {
+		//生成请求
+		DaspVehicleInfoQueryCommRequest req = new DaspVehicleInfoQueryCommRequest();
+		req.setVehicleId(queryModel.getVehicleId());
+		//接口调用
+		DaspVehicleInfoQueryCommResponse vehicleQuery;
+		try {
+			vehicleQuery = inqueryBinService.vehicleQuery(req);
+			if (vehicleQuery == null || vehicleQuery.getStatus() != 1) throw new ManagerException(vehicleQuery.getMessage());
+		} catch (ApiRequestException e) {
+			throw new ManagerException(e.getMessage());
+		} catch (IOException e) {
+			throw new ManagerException("查询失败");
+		}
+		return vehicleQuery;
+	}
+
+}

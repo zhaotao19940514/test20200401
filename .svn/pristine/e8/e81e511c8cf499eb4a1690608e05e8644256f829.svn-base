@@ -1,0 +1,59 @@
+/**
+ * @Title RechargeController.java
+ * @Package cn.com.taiji.css.web.customerservice.finance
+ * @Description TODO
+ * @author yaonanlin
+ * @date 2018年6月25日 下午5:14:54
+ * @version V1.0
+ */
+package cn.com.taiji.css.web.apply.baseinfo;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.css.manager.apply.baseinfo.DaspVehicleQueryManager;
+import cn.com.taiji.css.model.customerservice.cardobuquery.DaspVehicleQueryRequest;
+import cn.com.taiji.css.web.MyLogController;
+import cn.com.taiji.dsi.model.comm.protocol.inquire.DaspVehicleInfoQueryCommResponse;
+import cn.com.taiji.qtk.entity.VehicleInfo;
+
+/**
+ * @ClassName RechargeController
+ * @Description TODO
+ * @author yaonl
+ * @date 2018年06月25日 17:14:54
+ * @E_mail yaonanlin@163.com
+ */
+@Controller
+@RequestMapping("/apply/baseinfo/daspVehicleQuery")
+public class DaspVehicleQueryController extends MyLogController {
+	@Autowired
+	private DaspVehicleQueryManager daspVehicleQueryManager;
+	
+	private final String prefix = "apply/baseinfo/daspVehicleQuery/";
+
+	@RequestMapping(value = "/manage", method = RequestMethod.GET)
+	public String manageGet(@ModelAttribute("queryModel") DaspVehicleQueryRequest queryModel, Model model)
+	{
+		return prefix+"manage";
+	}
+
+	@RequestMapping(value = "/manage", method = RequestMethod.POST)
+	public String managePost(@ModelAttribute("queryModel") DaspVehicleQueryRequest queryModel, Model model, HttpServletRequest req) throws ManagerException
+	{	
+		VehicleInfo vehicle = daspVehicleQueryManager.findByVehicleIdInDsi(queryModel);
+		DaspVehicleInfoQueryCommResponse daspVehicle = daspVehicleQueryManager.findByVehicleIdInDasp(queryModel);
+		model.addAttribute("vehicle",vehicle);
+		model.addAttribute("daspVehicle",daspVehicle);
+		return prefix+"queryResult";
+	}
+	
+}
+

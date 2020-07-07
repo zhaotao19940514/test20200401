@@ -1,0 +1,29 @@
+
+.titile{
+	text-align:right;
+	font-size: 13px;
+	width: 115px;
+};
+.details{
+	text-align:left;
+}
+.caption{
+	font-size: 15px;
+	font-weight: bold;
+	margin: 0px;
+}
+.essential{
+	color: red;
+}
+.essentialCar{
+	color: red;
+}
+.essentialLorry{
+	color: red;
+}
+.essentialLo{
+	color: red;
+}
+.drivingPermit{
+	color: red;
+}

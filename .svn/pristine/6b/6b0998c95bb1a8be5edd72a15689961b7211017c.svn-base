@@ -1,0 +1,159 @@
+package cn.com.taiji.css.manager.customerservice.card.balance;
+
+import java.io.IOException;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import cn.com.taiji.common.manager.ManagerException;
+import cn.com.taiji.css.entity.User;
+import cn.com.taiji.css.manager.abstractmanager.AbstractDsiCommManager;
+import cn.com.taiji.css.model.customerservice.card.balance.CardBalancePaymentBackRequest;
+import cn.com.taiji.css.model.customerservice.card.balance.CardBalancePaymentBackShowModel;
+import cn.com.taiji.dsi.manager.comm.client.FinanceBinService;
+import cn.com.taiji.dsi.model.cardbalance.CardBalancePaymentDetailRequest;
+import cn.com.taiji.dsi.model.cardbalance.CardBalancePaymentDetailResponse;
+import cn.com.taiji.dsi.model.cardbalance.CardBalancePaymentRequest;
+import cn.com.taiji.dsi.model.cardbalance.CardBalancePaymentResponse;
+import cn.com.taiji.dsi.model.cardbalance.CardBalanceQueryRequest;
+import cn.com.taiji.dsi.model.cardbalance.CardBalanceQueryResponse;
+import cn.com.taiji.dsi.model.cardbalance.CardBalanceTransactionRequest;
+import cn.com.taiji.dsi.model.cardbalance.CardBalanceTransactionResponse;
+import cn.com.taiji.qtk.entity.Agency;
+import cn.com.taiji.qtk.entity.CardInfo;
+import cn.com.taiji.qtk.repo.jpa.AgencyRepo;
+import cn.com.taiji.qtk.repo.jpa.CardInfoRepo;
+
+@Service
+public class CardBalancePaymentBackManagerImpl extends AbstractDsiCommManager implements CardBalancePaymentBackManager {
+
+	@Autowired
+	private AgencyRepo agencyRepo;
+
+	@Autowired
+	private FinanceBinService financeBinService;
+
+	@Autowired
+	private CardInfoRepo cardInfoRepo;
+
+	@Override
+	public CardBalancePaymentBackShowModel query(CardBalancePaymentBackRequest queryModel, User user)
+			throws ManagerException {
+		cardIdCheck(queryModel.getCardId());
+		CardBalanceQueryRequest request = new CardBalanceQueryRequest();
+		request.setCardId(queryModel.getCardId());
+		super.commSet(request, user);
+		CardBalanceQueryResponse cardBalanceQuery = null;
+		try {
+			cardBalanceQuery = financeBinService.cardBalanceQuery(request);
+			if (cardBalanceQuery == null)
+				throw new ManagerException("接口异常");
+			if (!"成功".equals(cardBalanceQuery.getMessage()))
+				throw new ManagerException(cardBalanceQuery.getMessage());
+		} catch (IOException e) {
+			throw new ManagerException("IO异常。。。");
+		}
+		Agency agency = null;
+		if (cardBalanceQuery != null && cardBalanceQuery.getAgencyId() != null) {
+			agency = agencyRepo.findByAgencyId(cardBalanceQuery.getAgencyId());
+		}
+		return setShowModel(agency, cardBalanceQuery);
+	}
+
+	private CardBalancePaymentBackShowModel setShowModel(Agency agency, CardBalanceQueryResponse cardBalanceQuery) {
+		CardBalancePaymentBackShowModel model = new CardBalancePaymentBackShowModel();
+		if (agency != null)
+			model.setAgencyName(agency.getName());
+		model.setHandleDate(cardBalanceQuery.getHandleTime());
+		model.setCardId(cardBalanceQuery.getCardId());
+		if (cardBalanceQuery.getPaymentFee() < 0)
+			model.setPaymentFee(cardBalanceQuery.getPaymentFee());
+		else
+			model.setPaymentFee(0L);
+		return model;
+	}
+
+	@Transactional
+	@Override
+	public void paymentBack(String cardId, User user, Long fee) throws ManagerException {
+		cardIdCheck(cardId);
+		CardBalancePaymentRequest request = new CardBalancePaymentRequest();
+		request.setCardId(cardId);
+		request.setFee(fee * -1);
+		request.setTransId(null);
+		super.commSet(request, user);
+		try {
+			CardBalancePaymentResponse cardBalancePayment = financeBinService.cardBalancePayment(request);
+			if (cardBalancePayment == null)
+				throw new ManagerException("接口异常");
+			if (!"成功".equals(cardBalancePayment.getMessage()))
+				throw new ManagerException(cardBalancePayment.getMessage());
+			if (cardBalancePayment.getCardId() == null)
+				throw new ManagerException("dsi有未知异常，请联系管理员");
+		} catch (IOException e) {
+			throw new ManagerException("IO异常。。。");
+		}
+
+	}
+
+	@Override
+	public CardBalancePaymentDetailResponse paymentDetail(String cardId, User user) throws ManagerException {
+		cardIdCheck(cardId);
+		CardBalancePaymentDetailRequest request = new CardBalancePaymentDetailRequest();
+		request.setCardId(cardId);
+		super.commSet(request, user);
+		CardBalancePaymentDetailResponse detail = null;
+		try {
+			detail = financeBinService.cardBalancePaymentDetail(request);
+			if (detail == null)
+				throw new ManagerException("接口异常");
+			if (detail.getPaymentDetail() == null || detail.getPaymentDetail().size() == 0)
+				throw new ManagerException("无该卡的补交记录");
+			if (!"成功".equals(detail.getMessage()))
+				throw new ManagerException(detail.getMessage());
+		} catch (IOException e) {
+			throw new ManagerException("IO异常。。。");
+		}
+		return detail;
+	}
+
+	@Override
+	public CardBalanceTransactionResponse balanceTransaction(String cardId, User user) throws ManagerException {
+		cardIdCheck(cardId);
+		CardBalanceTransactionRequest request = new CardBalanceTransactionRequest();
+		request.setCardId(cardId);
+		super.commSet(request, user);
+		CardBalanceTransactionResponse detail = null;
+		try {
+			detail = financeBinService.cardBalanceTransaction(request);
+			if (detail == null)
+				throw new ManagerException("接口异常");
+//			if (detail.getTransactionDetail() == null || detail.getTransactionDetail().size() == 0) {
+//				if (detail.getPresentFee() == null && detail.getTotalFee() == null)
+//				throw new ManagerException("无该卡的卡账明细");
+//			}
+			if (!"成功".equals(detail.getMessage()))
+				throw new ManagerException(detail.getMessage());
+		} catch (IOException e) {
+			throw new ManagerException("IO异常。。。");
+		}
+		return detail;
+	}
+
+	private void cardIdCheck(String cardId) throws ManagerException {
+		if (cardId == null) {
+			throw new ManagerException("请填写卡号");
+		}
+		if (cardId.length() != 20) {
+			throw new ManagerException("卡号填写错误");
+		}
+		if (!cardId.startsWith("5201")) {
+			throw new ManagerException("卡号填写错误");
+		}
+		CardInfo card = cardInfoRepo.findByCardId(cardId);
+		if (card != null && (card.getAgencyId().equals("52010102007") || card.getAgencyId().equals("52010102005"))) {
+			throw new ManagerException("该卡为工行卡，请联系工行客服人员获取卡账");
+		}
+	}
+}

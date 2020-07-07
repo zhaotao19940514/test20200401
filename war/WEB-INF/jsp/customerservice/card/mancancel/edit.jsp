@@ -65,7 +65,7 @@
 	<h4 class="modal-title">销卡详情</h4>
 </div>
 <div class="modal-body">
-<form:form modelAttribute="pageModel1" id="myForm" name="myForm" cssClass="form-horizontal">
+<form:form modelAttribute="queryModel1" id="myForm" name="myForm" cssClass="form-horizontal">
 		<div class="form-group">
 		 <table class="table table-bordered table-striped" id="tab" style="width:80%;margin:5%">
 			<!-- <table border="1" style="font-size:14px"> -->

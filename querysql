@@ -1,0 +1,9 @@
+--查询注销定时器是否执行正常
+select * from qtk_cardinfo card,qtk_cancelledcard_detail can where card.card_id=can.card_id and can.status=1 and card.card_status=9 and can.cancellation_time<'20200524'
+update qtk_cancelledcard_detail can set can.status=0 where can.card_id in(select card.card_id from qtk_cardinfo card,qtk_cancelledcard_detail can where card.card_id=can.card_id and can.status=1 and card.card_status=9 and can.cancellation_time<'20200524')
+--查询黑名单
+SELECT * FROM QTK_MONITOR_TRANSINFACE_DETAIL WHERE REQUEST_STR LIKE '%52011640230200324634%' and SERVICE_TYPE='CARDBLACKLISTUPLOADSUBMIT' AND SUBMIT_TIME>='2020-06-09T00:45:00' AND SUBMIT_TIME<='2020-06-09T11:00:00';
+--修改用户名密码
+UPDATE qtk_css_user 
+SET PASSWD ='ba3253876aed6bc22d4a6ff53d8406c6ad864195ed144ab5c87621b6c233b548baeae6956df346ec8c17f5ea10f35ee3cbc514797ed7ddd3145464e2a0bab413' 
+where   2820e4bc3987965b18766b0bab4dd1e52304db6ff15a5b532804112158951adf6043aec87327a434ea3792be396276e19739ea6a8df8e2332488a9e5034d0549

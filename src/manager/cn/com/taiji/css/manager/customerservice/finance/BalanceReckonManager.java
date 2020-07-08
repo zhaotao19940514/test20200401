@@ -30,5 +30,7 @@ public interface BalanceReckonManager {
 	 */
 	LargePagination<CardInfo> queryPage(BalanceReckonRequest queryModel,User user) throws ManagerException;
 
+	void balanceReckon(String cardId);
+
 }
 

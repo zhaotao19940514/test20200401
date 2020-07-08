@@ -15,8 +15,11 @@ import cn.com.taiji.common.manager.ManagerException;
 import cn.com.taiji.common.model.dao.LargePagination;
 import cn.com.taiji.css.entity.User;
 import cn.com.taiji.css.manager.abstractmanager.AbstractDsiCommManager;
+import cn.com.taiji.css.model.customerservice.finance.BalanceReckonModel;
 import cn.com.taiji.css.model.customerservice.finance.BalanceReckonRequest;
+import cn.com.taiji.qtk.entity.AccountCardBalance;
 import cn.com.taiji.qtk.entity.CardInfo;
+import cn.com.taiji.qtk.repo.jpa.AccountCardBalanceRepo;
 import cn.com.taiji.qtk.repo.jpa.CardInfoRepo;
 /**
  * 
@@ -29,10 +32,25 @@ import cn.com.taiji.qtk.repo.jpa.CardInfoRepo;
 public class BalanceReckonManagerImpl extends AbstractDsiCommManager implements BalanceReckonManager{
 	@Autowired
 	private CardInfoRepo cardInfoRepo;
+	@Autowired
+	private AccountCardBalanceRepo accountCardBalanceRepo;
+	
+	
+	
 	@Override
 	public LargePagination<CardInfo> queryPage(BalanceReckonRequest queryModel, User user) throws ManagerException {
 		
 		return cardInfoRepo.largePage(queryModel);
+	}
+	@Override
+	public void balanceReckon(String cardId) {
+		BalanceReckonModel model = new BalanceReckonModel();
+		//华软初始卡账
+		AccountCardBalance accountBalance = accountCardBalanceRepo.findAccountCardBalanceByCardId(cardId);
+		model.setAccountBalance(accountBalance.getInitAmount());
+		
+		
+		
 	}
 
 }

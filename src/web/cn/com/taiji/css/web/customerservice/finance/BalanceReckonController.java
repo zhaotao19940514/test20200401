@@ -51,6 +51,7 @@ public class BalanceReckonController extends MyLogController{
 	@RequestMapping(value = "/edit/{id}", method = RequestMethod.GET)
 	public String setupEdit(@PathVariable("id") String cardId, HttpServletRequest request, Model model)
 	{
+		balanceReckonManager.balanceReckon(cardId);
 		return prefix + "edit";
 	}
 
